@@ -71,7 +71,7 @@ contract HoneyGenesis is ERC1155, IERC2981 {
         return (receiver, royaltyAmount);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, ERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, IERC165) returns (bool) {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
 

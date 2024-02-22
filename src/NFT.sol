@@ -1,64 +1,81 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "lib/openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
-import "lib/openzeppelin-contracts/contracts/interfaces/IERC2981.sol";
-import "lib/openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
+import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import "openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
+import "openzeppelin-contracts/contracts/interfaces/IERC2981.sol";
+import "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 
 contract HoneyGenesis is ERC1155, IERC2981 {
     address private owner;
-    uint256 private constant MINT_ROYALTY = 8;
-    uint256 private constant SECONDARY_SALE_ROYALTY = 5;
+    uint256 public totalSupply;
+    uint256 private constant TOTAL_SUPPLY_CAP = 6000;
+    uint256 private constant INITIAL_PRICE = 0.07 ether;
+    uint256 private constant PRICE_INCREMENT = 0.007 ether;
+    uint256 private constant INITIAL_SUPPLY_LIMIT = 1000;
+    uint256 private constant SUPPLY_INCREMENT_LIMIT = 500;
 
-    // Mapping from tokenID to creator
-    mapping(uint256 => address) private creators;
+    // Static URL for all NFTs
+    string private constant BASE_URI = "https://media.istockphoto.com/id/1486357598/photo/coastal-brown-bear-fishing-in-katmai.jpg?s=1024x1024&w=is&k=20&c=CDXisI1NFpmH4oD-TmWVgGCfDUUuoS9jRu_kzzPCe0g=";
 
-    // Optional mapping for token URIs
-    mapping(uint256 => string) private _tokenURIs;
-
-    constructor() ERC1155("") {
+    constructor() ERC1155(BASE_URI) {
         owner = msg.sender;
+        totalSupply = 0; // Initialize total supply
     }
 
-    // Ensure only the contract owner can mint new tokens
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the owner");
         _;
     }
 
-    // Minting function with royalty logic on mint
-    function mint(address account, uint256 id, uint256 amount, bytes memory data) public onlyOwner {
-        _mint(account, id, amount, data);
-        creators[id] = msg.sender; // Set the creator for royalty info
+    function mint(uint256 id, uint256 amount) public payable {
+        require(totalSupply + amount <= TOTAL_SUPPLY_CAP, "Exceeds total supply cap");
+        uint256 currentPrice = getCurrentPrice();
+        require(msg.value >= amount * currentPrice, "Ether sent is not correct");
 
-        // Implement logic here to handle the 8% royalty on mint if applicable
-        // This could involve setting aside tokens or funds in a specific way
+        _mint(msg.sender, id, amount, "");
+        totalSupply += amount;
     }
 
-    // Override for royalty info (EIP-2981)
+    function getCurrentPrice() public view returns (uint256) {
+        if(totalSupply < INITIAL_SUPPLY_LIMIT) {
+            return INITIAL_PRICE;
+        } else {
+            uint256 priceIncrements = (totalSupply - INITIAL_SUPPLY_LIMIT) / SUPPLY_INCREMENT_LIMIT + 1;
+            return INITIAL_PRICE + (priceIncrements * PRICE_INCREMENT);
+        }
+    }
+
+    function getMintedNFTsCount() public view returns (uint256) {
+        return totalSupply;
+    }
+
+    function getNextNFTPrice() public view returns (uint256) {
+        uint256 nextTotalSupply = totalSupply + 1;
+        if(nextTotalSupply <= TOTAL_SUPPLY_CAP) {
+            if(nextTotalSupply <= INITIAL_SUPPLY_LIMIT) {
+                return INITIAL_PRICE;
+            } else {
+                uint256 priceIncrements = (nextTotalSupply - INITIAL_SUPPLY_LIMIT - 1) / SUPPLY_INCREMENT_LIMIT + 1;
+                return INITIAL_PRICE + (priceIncrements * PRICE_INCREMENT);
+            }
+        } else {
+            revert("Max supply reached");
+        }
+    }
+
+    // Override for royalty info to always return the owner as the receiver
     function royaltyInfo(uint256 tokenId, uint256 salePrice) external view override returns (address receiver, uint256 royaltyAmount) {
-        require(creators[tokenId] != address(0), "Token does not exist");
-        receiver = creators[tokenId];
-        // Differentiate first sale from secondary sales
-        // This example assumes the contract can differentiate minting (first sale) from secondary sales
-        // You might need a custom mechanism to track first versus secondary sales
-        royaltyAmount = salePrice * SECONDARY_SALE_ROYALTY / 100;
+        receiver = owner; // Royalties always go to the owner
+        royaltyAmount = salePrice * 5 / 100; // Assuming a flat 5% royalty
         return (receiver, royaltyAmount);
     }
 
-    // Supports interface function (including IERC2981)
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155, ERC165) returns (bool) {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    // Custom function to set token URI if desired (not part of ERC-1155 standard, but often included)
-    function setURI(uint256 tokenId, string memory uri) public onlyOwner {
-        require(bytes(_tokenURIs[tokenId]).length == 0, "URI already set");
-        _tokenURIs[tokenId] = uri;
-        emit URI(uri, tokenId);
-    }
-
-    function uri(uint256 tokenId) override public view returns (string memory) {
-        return _tokenURIs[tokenId];
+    function uri(uint256) public view override returns (string memory) {
+        return BASE_URI;
     }
 }

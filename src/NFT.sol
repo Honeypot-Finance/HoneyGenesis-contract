@@ -6,7 +6,7 @@ import "openzeppelin-contracts/contracts/token/ERC1155/ERC1155.sol";
 import "openzeppelin-contracts/contracts/interfaces/IERC2981.sol";
 import "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 
-contract HoneyGenesis is ERC1155, IERC2981 {
+contract HoneyGenesis1 is ERC1155, IERC2981 {
     address private owner;
     uint256 public totalSupply;
     uint256 private constant TOTAL_SUPPLY_CAP = 6000;
@@ -67,7 +67,7 @@ contract HoneyGenesis is ERC1155, IERC2981 {
     // Override for royalty info to always return the owner as the receiver
     function royaltyInfo(uint256 tokenId, uint256 salePrice) external view override returns (address receiver, uint256 royaltyAmount) {
         receiver = owner; // Royalties always go to the owner
-        royaltyAmount = salePrice * 5 / 100; // Assuming a flat 5% royalty
+        royaltyAmount = salePrice * 3 / 100; // Assuming a flat 3% royalty
         return (receiver, royaltyAmount);
     }
 
@@ -78,4 +78,21 @@ contract HoneyGenesis is ERC1155, IERC2981 {
     function uri(uint256) public view override returns (string memory) {
         return BASE_URI;
     }
+
+    function getTotalSupplyCap() public view returns (uint256) {
+        return TOTAL_SUPPLY_CAP;
+    }
+
+    function withdraw() public onlyOwner {
+        payable(owner).transfer(address(this).balance);
+    }
+
+    function setOwner(address _owner) public onlyOwner {
+        owner = _owner;
+    }
+
+    function setURI(string memory newuri) public onlyOwner {
+        _setURI(newuri);
+    }
+    
 }

@@ -1,0 +1,127 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.24;
+
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
+import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
+import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+
+contract HoneyGenesis is ERC721, IERC2981, Ownable {
+
+    event NFTMinted(address indexed minter, uint256 amount, uint256 value);
+    event FundWithdrawn(address owner, uint256 amount);
+
+    uint256 private constant TOTAL_SUPPLY_CAP = 6000; // max 6000 NFTs
+    uint256 private constant UNIT_PRICE = 0.07 ether; // 0.07 ETH minting fee
+    uint256 private constant PRICE_INCREMENT = 0.007 ether; // 0.007 ETH price increment
+    uint256 private constant VIP_SUPPLY_LIMIT = 1000; // The first 1000 NFTs for VIP minting
+    uint256 private constant SUPPLY_INCREMENT_STEPSIZE = 500; // After the first 1000 NFTs, the price will increase every 500 NFTs
+    uint256 private constant MAX_MINT_AMOUNT_WHITELIST = 20; // Max 20 NFTs for whitelisted wallets
+
+    bytes32 public merkleRoot; // The merkle root for whitelist verification
+
+    uint256 public tokenId; // The current token ID
+
+    mapping(address => bool) private _alreadyMinted; // whitelisted wallets can only mint once at low price
+
+    constructor(bytes32 _merkleRoot) ERC721("HoneyGenesis", "HONEY") Ownable(msg.sender) {
+        merkleRoot = _merkleRoot;
+    }
+
+    function mint(uint256 amount) public payable {
+        address minter = msg.sender;
+        require(msg.value == amount * getCurrentPrice(), "Insufficient funds");
+        require(tokenId + amount <= TOTAL_SUPPLY_CAP, "Exceeds total supply cap");
+
+        for (uint256 i = 0; i < amount; ++i) {
+            ++tokenId;
+            _safeMint(minter, tokenId);
+        }
+
+        emit NFTMinted(minter, amount, msg.value);
+    }
+
+    function mint(bytes32[] calldata proofs, uint256 amount) public payable {
+        require(merkleRoot != bytes32(0), "White listing not supported");
+        address minter = msg.sender;
+        bytes32 leaf = keccak256(abi.encodePacked(minter));
+        require(MerkleProof.verify(proofs, merkleRoot, leaf), "Invalid proof");
+        require(msg.value == amount * UNIT_PRICE, "Insufficient funds");
+        require(tokenId + amount <= TOTAL_SUPPLY_CAP, "Exceeds total supply cap");
+        require(amount <= MAX_MINT_AMOUNT_WHITELIST, "Exceeds max mint amount");
+        require(!_alreadyMinted[minter], "Already minted");
+
+        _alreadyMinted[minter] = true;
+
+        for (uint256 i = 0; i < amount; ++i) {
+            ++tokenId;
+            _safeMint(minter, tokenId);
+        }
+
+        emit NFTMinted(minter, amount, msg.value);
+    }
+
+    function withdraw() public onlyOwner {
+        (bool success, ) = owner().call{value: address(this).balance}("");
+        require(success, "Transfer failed");
+
+        emit FundWithdrawn(owner(), address(this).balance);
+    }
+
+    function setMerkleRoot(bytes32 _merkleRoot) public onlyOwner {
+        merkleRoot = _merkleRoot;
+    }
+
+    function getCurrentPrice() public view returns (uint256) {
+        if(tokenId < VIP_SUPPLY_LIMIT) {
+            return UNIT_PRICE;
+        } else {
+            uint256 priceIncrements = (tokenId - VIP_SUPPLY_LIMIT) / SUPPLY_INCREMENT_STEPSIZE + 1;
+            return UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
+        }
+    }
+
+    function getMintedNFTsCount() public view returns (uint256) {
+        return tokenId;
+    }
+
+    function getTotalNFTCount() public pure returns (uint256) {
+        return TOTAL_SUPPLY_CAP;
+    }
+
+    function getNextNFTPrice() public view returns (uint256) {
+        uint256 nexttokenId = tokenId + 1;
+        if (nexttokenId <= TOTAL_SUPPLY_CAP) {
+            if (nexttokenId <= VIP_SUPPLY_LIMIT) {
+                return UNIT_PRICE;
+            } else {
+                uint256 priceIncrements = (nexttokenId - VIP_SUPPLY_LIMIT - 1) / SUPPLY_INCREMENT_STEPSIZE + 1;
+                return UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
+            }
+        } else {
+            revert("Max supply reached");
+        }
+    }
+
+    // Override for royalty info to always return the owner as the receiver
+    function royaltyInfo(uint256 /*tokenId*/, uint256 salePrice) external view override returns (address receiver, uint256 royaltyAmount) {
+        receiver = owner(); // Royalties always go to the owner
+        royaltyAmount = salePrice * 5 / 100; // Assuming a flat 5% royalty
+        return (receiver, royaltyAmount);
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, IERC165) returns (bool) {
+        return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * @dev Base URI for computing {tokenURI}. If set, the resulting URI for each
+     * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
+     * by default, can be overridden in child contracts.
+     */
+    function _baseURI() internal pure override returns (string memory) {
+        return "https://media.istockphoto.com/id/1486357598/photo/coastal-brown-bear-fishing-in-katmai.jpg?s=1024x1024&w=is&k=20&c=CDXisI1NFpmH4oD-TmWVgGCfDUUuoS9jRu_kzzPCe0g=";
+    }
+}

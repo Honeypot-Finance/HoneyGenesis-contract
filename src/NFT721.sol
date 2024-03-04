@@ -13,18 +13,24 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     event NFTMinted(address indexed minter, uint256 amount, uint256 value);
     event FundWithdrawn(address owner, uint256 amount);
 
-    uint256 private constant TOTAL_SUPPLY_CAP = 6000; // max 6000 NFTs
-    uint256 private constant UNIT_PRICE = 0.07 ether; // 0.07 ETH minting fee
+    uint256 private constant TOTAL_SUPPLY_CAP = 5000; // max 5000 NFTs
+    uint256 private constant VIP_SUPPLY_CAP = 1000; // max 1000 NFTs for VIP minting
+
+    uint256 private constant MINT_VIP_PRICE = 0.069 ether; // 0.069 ETH minting fee for VIP
+    uint256 private constant MINT_UNIT_PRICE = 0.07 ether; // 0.07 ETH minting fee for normal wallets
     uint256 private constant PRICE_INCREMENT = 0.007 ether; // 0.007 ETH price increment
-    uint256 private constant VIP_SUPPLY_LIMIT = 1000; // The first 1000 NFTs for VIP minting
+
     uint256 private constant SUPPLY_INCREMENT_STEPSIZE = 500; // After the first 1000 NFTs, the price will increase every 500 NFTs
-    uint256 private constant MAX_MINT_AMOUNT_WHITELIST = 20; // Max 20 NFTs for whitelisted wallets
+    uint256 private constant MAX_MINT_AMOUNT = 20; // Max 20 NFTs for each normal wallets
 
     bytes32 public merkleRoot; // The merkle root for whitelist verification
 
     uint256 public tokenId; // The current token ID
+    uint256 public tokenCountNormal; // The current token ID
+    uint256 public tokenCountVIP; // The current token ID
 
-    mapping(address => bool) private _alreadyMinted; // whitelisted wallets can only mint once at low price
+    // mapping(address => uint256) private _alreadyMinted; // whitelisted wallets can only mint once at low price
+    mapping(address => uint256) private _VIPMintQuota; // whitelisted wallets can only mint up to a quota at VIP price
 
     constructor(bytes32 _merkleRoot) ERC721("HoneyGenesis", "HONEY") Ownable(msg.sender) {
         merkleRoot = _merkleRoot;
@@ -32,10 +38,12 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
 
     function mint(uint256 amount) public payable {
         address minter = msg.sender;
-        require(msg.value == amount * getCurrentPrice(), "Insufficient funds");
+        require(msg.value >= amount * getCurrentPrice(), "Insufficient funds");
         require(tokenId + amount <= TOTAL_SUPPLY_CAP, "Exceeds total supply cap");
+        require(amount <= MAX_MINT_AMOUNT, "Exceeds max mint amount");
 
         for (uint256 i = 0; i < amount; ++i) {
+            ++tokenCountNormal;
             ++tokenId;
             _safeMint(minter, tokenId);
         }
@@ -43,20 +51,21 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         emit NFTMinted(minter, amount, msg.value);
     }
 
-    function mint(bytes32[] calldata proofs, uint256 amount) public payable {
+    function mintVIP(bytes32[] calldata proofs, uint256 amount) public payable {
         require(merkleRoot != bytes32(0), "White listing not supported");
         address minter = msg.sender;
         bytes32 leaf = keccak256(abi.encodePacked(minter));
-        require(MerkleProof.verify(proofs, merkleRoot, leaf), "Invalid proof");
-        require(msg.value == amount * UNIT_PRICE, "Insufficient funds");
-        require(tokenId + amount <= TOTAL_SUPPLY_CAP, "Exceeds total supply cap");
-        require(amount <= MAX_MINT_AMOUNT_WHITELIST, "Exceeds max mint amount");
-        require(!_alreadyMinted[minter], "Already minted");
+        require(MerkleProof.verify(proofs, merkleRoot, leaf), "Invalid proof, sender is not on VIP whitelist");
+        require(msg.value >= amount * MINT_VIP_PRICE, "Insufficient funds");
+        require(tokenId + amount <= VIP_SUPPLY_CAP, "Exceeds total VIP supply cap");
+        require(_VIPMintQuota[minter] >= amount, "Exceeds VIP mint quota");
 
-        _alreadyMinted[minter] = true;
+
+        _VIPMintQuota[minter] -= amount;
 
         for (uint256 i = 0; i < amount; ++i) {
             ++tokenId;
+            ++tokenCountVIP;
             _safeMint(minter, tokenId);
         }
 
@@ -75,31 +84,31 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     }
 
     function getCurrentPrice() public view returns (uint256) {
-        if(tokenId < VIP_SUPPLY_LIMIT) {
-            return UNIT_PRICE;
-        } else {
-            uint256 priceIncrements = (tokenId - VIP_SUPPLY_LIMIT) / SUPPLY_INCREMENT_STEPSIZE + 1;
-            return UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
-        }
+        uint256 priceIncrements = tokenCountNormal / SUPPLY_INCREMENT_STEPSIZE + 1;
+        return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
     }
 
     function getMintedNFTsCount() public view returns (uint256) {
-        return tokenId;
+        return tokenCountNormal;
+    }
+
+    function getMintedVIPNFTsCount() public view returns (uint256) {
+        return tokenCountVIP;
     }
 
     function getTotalNFTCount() public pure returns (uint256) {
         return TOTAL_SUPPLY_CAP;
     }
 
+    function getTotalVIPNFTCount() public pure returns (uint256) {
+        return VIP_SUPPLY_CAP;
+    }
+
     function getNextNFTPrice() public view returns (uint256) {
-        uint256 nexttokenId = tokenId + 1;
+        uint256 nexttokenId = tokenCountNormal + SUPPLY_INCREMENT_STEPSIZE;
         if (nexttokenId <= TOTAL_SUPPLY_CAP) {
-            if (nexttokenId <= VIP_SUPPLY_LIMIT) {
-                return UNIT_PRICE;
-            } else {
-                uint256 priceIncrements = (nexttokenId - VIP_SUPPLY_LIMIT - 1) / SUPPLY_INCREMENT_STEPSIZE + 1;
-                return UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
-            }
+            uint256 priceIncrements = (nexttokenId) / SUPPLY_INCREMENT_STEPSIZE + 1;
+            return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
         } else {
             revert("Max supply reached");
         }

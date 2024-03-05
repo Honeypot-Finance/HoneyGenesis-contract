@@ -32,8 +32,10 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     // mapping(address => uint256) private _alreadyMinted; // whitelisted wallets can only mint once at low price
     mapping(address => uint256) private _VIPMintQuota; // whitelisted wallets can only mint up to a quota at VIP price
 
-    constructor(bytes32 _merkleRoot) ERC721("HoneyGenesis", "HONEY") Ownable(msg.sender) {
-        merkleRoot = _merkleRoot;
+    constructor() ERC721("HoneyGenesis", "HONEY") Ownable(msg.sender) {
+        tokenId = 0;
+        tokenCountNormal = 0;
+        tokenCountVIP = 0;
     }
 
     function mint(uint256 amount) public payable {
@@ -51,11 +53,11 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         emit NFTMinted(minter, amount, msg.value);
     }
 
-    function mintVIP(bytes32[] calldata proofs, uint256 amount) public payable {
-        require(merkleRoot != bytes32(0), "White listing not supported");
+    function mintVIP(uint256 amount) public payable {
+        // require(merkleRoot != bytes32(0), "White listing not supported");
         address minter = msg.sender;
-        bytes32 leaf = keccak256(abi.encodePacked(minter));
-        require(MerkleProof.verify(proofs, merkleRoot, leaf), "Invalid proof, sender is not on VIP whitelist");
+        // bytes32 leaf = keccak256(abi.encodePacked(minter));
+        // require(MerkleProof.verify(proofs, merkleRoot, leaf), "Invalid proof, sender is not on VIP whitelist");
         require(msg.value >= amount * MINT_VIP_PRICE, "Insufficient funds");
         require(tokenId + amount <= VIP_SUPPLY_CAP, "Exceeds total VIP supply cap");
         require(_VIPMintQuota[minter] >= amount, "Exceeds VIP mint quota");
@@ -79,13 +81,17 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         emit FundWithdrawn(owner(), address(this).balance);
     }
 
-    function setMerkleRoot(bytes32 _merkleRoot) public onlyOwner {
-        merkleRoot = _merkleRoot;
-    }
+    // function setMerkleRoot(bytes32 _merkleRoot) public onlyOwner {
+    //     merkleRoot = _merkleRoot;
+    // }
 
     function getCurrentPrice() public view returns (uint256) {
         uint256 priceIncrements = tokenCountNormal / SUPPLY_INCREMENT_STEPSIZE + 1;
         return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
+    }
+
+    function getVIPPrice() public pure returns (uint256) {
+        return MINT_VIP_PRICE;
     }
 
     function getMintedNFTsCount() public view returns (uint256) {
@@ -112,6 +118,16 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         } else {
             revert("Max supply reached");
         }
+    }
+
+    // Function to read the balance of an address
+    function getVIPMintQuota(address user) public view returns (uint256) {
+        return _VIPMintQuota[user];
+    }
+
+    // Function to increment the balance of an address
+    function incrementVIPMintQuota(address user, uint256 amount) public onlyOwner {
+        _VIPMintQuota[user] += amount;
     }
 
     // Override for royalty info to always return the owner as the receiver

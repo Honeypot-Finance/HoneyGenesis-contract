@@ -24,9 +24,9 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     uint256 private constant MAX_MINT_AMOUNT = 20; // Max 20 NFTs for each normal wallets
 
 
-    uint256 public tokenId; // The current token ID
-    uint256 public tokenCountNormal; // The current token ID
-    uint256 public tokenCountVIP; // The current token ID
+    uint256 public tokenId; // Token Index tracker to keep track of the entire ERC721 Collection
+    uint256 public tokenCountNormal; // Token Index to keep track of public sale
+    uint256 public tokenCountVIP; // Token Index to keep track of the Priority mint
 
     error Overflow();
 

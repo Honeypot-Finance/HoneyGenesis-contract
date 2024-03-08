@@ -26,8 +26,9 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     bytes32 public merkleRoot; // The merkle root for whitelist verification
 
     uint256 public tokenId; // The current token ID
-    uint256 public tokenCountNormal; // The current token ID
-    uint256 public tokenCountVIP; // The current token ID
+    uint256 public tokenCountNormal; 
+    uint256 public tokenCountKingdomly;
+    uint256 public tokenCountVIP; 
 
     // mapping(address => uint256) private _alreadyMinted; // whitelisted wallets can only mint once at low price
     mapping(address => uint256) private _VIPMintQuota; // whitelisted wallets can only mint up to a quota at VIP price
@@ -36,6 +37,12 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         tokenId = 0;
         tokenCountNormal = 0;
         tokenCountVIP = 0;
+        tokenCountKingdomly = 0;
+    }
+
+    function mintOnKingdomly(uint256 amount) public payable {
+        mint(amount);
+        tokenCountKingdomly = tokenCountKingdomly + amount;
     }
 
     function mint(uint256 amount) public payable {

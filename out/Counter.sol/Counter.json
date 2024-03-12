@@ -1,1 +1,387 @@
-{"abi":[{"type":"function","name":"increment","inputs":[],"outputs":[],"stateMutability":"nonpayable"},{"type":"function","name":"number","inputs":[],"outputs":[{"name":"","type":"uint256","internalType":"uint256"}],"stateMutability":"view"},{"type":"function","name":"setNumber","inputs":[{"name":"newNumber","type":"uint256","internalType":"uint256"}],"outputs":[],"stateMutability":"nonpayable"}],"bytecode":{"object":"0x608060405234801561001057600080fd5b5060f78061001f6000396000f3fe6080604052348015600f57600080fd5b5060043610603c5760003560e01c80633fb5c1cb1460415780638381f58a146053578063d09de08a14606d575b600080fd5b6051604c3660046083565b600055565b005b605b60005481565b60405190815260200160405180910390f35b6051600080549080607c83609b565b9190505550565b600060208284031215609457600080fd5b5035919050565b60006001820160ba57634e487b7160e01b600052601160045260246000fd5b506001019056fea2646970667358221220d0d9ddab7938f5110d4b596bed4b08e51e958848936177f9b1ce0f696635138b64736f6c63430008180033","sourceMap":"65:192:43:-:0;;;;;;;;;;;;;;;;;;;","linkReferences":{}},"deployedBytecode":{"object":"0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80633fb5c1cb1460415780638381f58a146053578063d09de08a14606d575b600080fd5b6051604c3660046083565b600055565b005b605b60005481565b60405190815260200160405180910390f35b6051600080549080607c83609b565b9190505550565b600060208284031215609457600080fd5b5035919050565b60006001820160ba57634e487b7160e01b600052601160045260246000fd5b506001019056fea2646970667358221220d0d9ddab7938f5110d4b596bed4b08e51e958848936177f9b1ce0f696635138b64736f6c63430008180033","sourceMap":"65:192:43:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;116:80;;;;;;:::i;:::-;171:6;:18;116:80;;;88:21;;;;;;;;;345:25:47;;;333:2;318:18;88:21:43;;;;;;;202:53;;240:6;:8;;;:6;:8;;;:::i;:::-;;;;;;202:53::o;14:180:47:-;73:6;126:2;114:9;105:7;101:23;97:32;94:52;;;142:1;139;132:12;94:52;-1:-1:-1;165:23:47;;14:180;-1:-1:-1;14:180:47:o;381:232::-;420:3;441:17;;;438:140;;500:10;495:3;491:20;488:1;481:31;535:4;532:1;525:15;563:4;560:1;553:15;438:140;-1:-1:-1;605:1:47;594:13;;381:232::o","linkReferences":{}},"methodIdentifiers":{"increment()":"d09de08a","number()":"8381f58a","setNumber(uint256)":"3fb5c1cb"},"rawMetadata":"{\"compiler\":{\"version\":\"0.8.24+commit.e11b9ed9\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"increment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"number\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newNumber\",\"type\":\"uint256\"}],\"name\":\"setNumber\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/Counter.sol\":\"Counter\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\"]},\"sources\":{\"src/Counter.sol\":{\"keccak256\":\"0x09277f949d59a9521708c870dc39c2c434ad8f86a5472efda6a732ef728c0053\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://94cd5258357da018bf911aeda60ed9f5b130dce27445669ee200313cd3389200\",\"dweb:/ipfs/QmNbEfWAqXCtfQpk6u7TpGa8sTHXFLpUz7uebz2FVbchSC\"]}},\"version\":1}","metadata":{"compiler":{"version":"0.8.24+commit.e11b9ed9"},"language":"Solidity","output":{"abi":[{"inputs":[],"stateMutability":"nonpayable","type":"function","name":"increment"},{"inputs":[],"stateMutability":"view","type":"function","name":"number","outputs":[{"internalType":"uint256","name":"","type":"uint256"}]},{"inputs":[{"internalType":"uint256","name":"newNumber","type":"uint256"}],"stateMutability":"nonpayable","type":"function","name":"setNumber"}],"devdoc":{"kind":"dev","methods":{},"version":1},"userdoc":{"kind":"user","methods":{},"version":1}},"settings":{"remappings":["@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/","ds-test/=lib/forge-std/lib/ds-test/src/","erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/","forge-std/=lib/forge-std/src/","openzeppelin-contracts/=lib/openzeppelin-contracts/"],"optimizer":{"enabled":true,"runs":200},"metadata":{"bytecodeHash":"ipfs"},"compilationTarget":{"src/Counter.sol":"Counter"},"evmVersion":"paris","libraries":{}},"sources":{"src/Counter.sol":{"keccak256":"0x09277f949d59a9521708c870dc39c2c434ad8f86a5472efda6a732ef728c0053","urls":["bzz-raw://94cd5258357da018bf911aeda60ed9f5b130dce27445669ee200313cd3389200","dweb:/ipfs/QmNbEfWAqXCtfQpk6u7TpGa8sTHXFLpUz7uebz2FVbchSC"],"license":"UNLICENSED"}},"version":1},"ast":{"absolutePath":"src/Counter.sol","id":50005,"exportedSymbols":{"Counter":[50004]},"nodeType":"SourceUnit","src":"39:219:43","nodes":[{"id":49984,"nodeType":"PragmaDirective","src":"39:24:43","nodes":[],"literals":["solidity","^","0.8",".13"]},{"id":50004,"nodeType":"ContractDefinition","src":"65:192:43","nodes":[{"id":49986,"nodeType":"VariableDeclaration","src":"88:21:43","nodes":[],"constant":false,"functionSelector":"8381f58a","mutability":"mutable","name":"number","nameLocation":"103:6:43","scope":50004,"stateVariable":true,"storageLocation":"default","typeDescriptions":{"typeIdentifier":"t_uint256","typeString":"uint256"},"typeName":{"id":49985,"name":"uint256","nodeType":"ElementaryTypeName","src":"88:7:43","typeDescriptions":{"typeIdentifier":"t_uint256","typeString":"uint256"}},"visibility":"public"},{"id":49996,"nodeType":"FunctionDefinition","src":"116:80:43","nodes":[],"body":{"id":49995,"nodeType":"Block","src":"161:35:43","nodes":[],"statements":[{"expression":{"id":49993,"isConstant":false,"isLValue":false,"isPure":false,"lValueRequested":false,"leftHandSide":{"id":49991,"name":"number","nodeType":"Identifier","overloadedDeclarations":[],"referencedDeclaration":49986,"src":"171:6:43","typeDescriptions":{"typeIdentifier":"t_uint256","typeString":"uint256"}},"nodeType":"Assignment","operator":"=","rightHandSide":{"id":49992,"name":"newNumber","nodeType":"Identifier","overloadedDeclarations":[],"referencedDeclaration":49988,"src":"180:9:43","typeDescriptions":{"typeIdentifier":"t_uint256","typeString":"uint256"}},"src":"171:18:43","typeDescriptions":{"typeIdentifier":"t_uint256","typeString":"uint256"}},"id":49994,"nodeType":"ExpressionStatement","src":"171:18:43"}]},"functionSelector":"3fb5c1cb","implemented":true,"kind":"function","modifiers":[],"name":"setNumber","nameLocation":"125:9:43","parameters":{"id":49989,"nodeType":"ParameterList","parameters":[{"constant":false,"id":49988,"mutability":"mutable","name":"newNumber","nameLocation":"143:9:43","nodeType":"VariableDeclaration","scope":49996,"src":"135:17:43","stateVariable":false,"storageLocation":"default","typeDescriptions":{"typeIdentifier":"t_uint256","typeString":"uint256"},"typeName":{"id":49987,"name":"uint256","nodeType":"ElementaryTypeName","src":"135:7:43","typeDescriptions":{"typeIdentifier":"t_uint256","typeString":"uint256"}},"visibility":"internal"}],"src":"134:19:43"},"returnParameters":{"id":49990,"nodeType":"ParameterList","parameters":[],"src":"161:0:43"},"scope":50004,"stateMutability":"nonpayable","virtual":false,"visibility":"public"},{"id":50003,"nodeType":"FunctionDefinition","src":"202:53:43","nodes":[],"body":{"id":50002,"nodeType":"Block","src":"230:25:43","nodes":[],"statements":[{"expression":{"id":50000,"isConstant":false,"isLValue":false,"isPure":false,"lValueRequested":false,"nodeType":"UnaryOperation","operator":"++","prefix":false,"src":"240:8:43","subExpression":{"id":49999,"name":"number","nodeType":"Identifier","overloadedDeclarations":[],"referencedDeclaration":49986,"src":"240:6:43","typeDescriptions":{"typeIdentifier":"t_uint256","typeString":"uint256"}},"typeDescriptions":{"typeIdentifier":"t_uint256","typeString":"uint256"}},"id":50001,"nodeType":"ExpressionStatement","src":"240:8:43"}]},"functionSelector":"d09de08a","implemented":true,"kind":"function","modifiers":[],"name":"increment","nameLocation":"211:9:43","parameters":{"id":49997,"nodeType":"ParameterList","parameters":[],"src":"220:2:43"},"returnParameters":{"id":49998,"nodeType":"ParameterList","parameters":[],"src":"230:0:43"},"scope":50004,"stateMutability":"nonpayable","virtual":false,"visibility":"public"}],"abstract":false,"baseContracts":[],"canonicalName":"Counter","contractDependencies":[],"contractKind":"contract","fullyImplemented":true,"linearizedBaseContracts":[50004],"name":"Counter","nameLocation":"74:7:43","scope":50005,"usedErrors":[],"usedEvents":[]}],"license":"UNLICENSED"},"id":43}
+{
+  "abi": [
+    {
+      "inputs": [],
+      "name": "increment",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "number",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "newNumber",
+          "type": "uint256"
+        }
+      ],
+      "name": "setNumber",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": {
+    "object": "0x608060405234801561001057600080fd5b5060f78061001f6000396000f3fe6080604052348015600f57600080fd5b5060043610603c5760003560e01c80633fb5c1cb1460415780638381f58a146053578063d09de08a14606d575b600080fd5b6051604c3660046083565b600055565b005b605b60005481565b60405190815260200160405180910390f35b6051600080549080607c83609b565b9190505550565b600060208284031215609457600080fd5b5035919050565b60006001820160ba57634e487b7160e01b600052601160045260246000fd5b506001019056fea2646970667358221220e432b5d7197513fef168038e5ad0d4453ac2a753696ba19a41190fecba9f5b1164736f6c63430008150033",
+    "sourceMap": "65:192:44:-:0;;;;;;;;;;;;;;;;;;;",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x6080604052348015600f57600080fd5b5060043610603c5760003560e01c80633fb5c1cb1460415780638381f58a146053578063d09de08a14606d575b600080fd5b6051604c3660046083565b600055565b005b605b60005481565b60405190815260200160405180910390f35b6051600080549080607c83609b565b9190505550565b600060208284031215609457600080fd5b5035919050565b60006001820160ba57634e487b7160e01b600052601160045260246000fd5b506001019056fea2646970667358221220e432b5d7197513fef168038e5ad0d4453ac2a753696ba19a41190fecba9f5b1164736f6c63430008150033",
+    "sourceMap": "65:192:44:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;116:80;;;;;;:::i;:::-;171:6;:18;116:80;;;88:21;;;;;;;;;345:25:49;;;333:2;318:18;88:21:44;;;;;;;202:53;;240:6;:8;;;:6;:8;;;:::i;:::-;;;;;;202:53::o;14:180:49:-;73:6;126:2;114:9;105:7;101:23;97:32;94:52;;;142:1;139;132:12;94:52;-1:-1:-1;165:23:49;;14:180;-1:-1:-1;14:180:49:o;381:232::-;420:3;441:17;;;438:140;;500:10;495:3;491:20;488:1;481:31;535:4;532:1;525:15;563:4;560:1;553:15;438:140;-1:-1:-1;605:1:49;594:13;;381:232::o",
+    "linkReferences": {}
+  },
+  "methodIdentifiers": {
+    "increment()": "d09de08a",
+    "number()": "8381f58a",
+    "setNumber(uint256)": "3fb5c1cb"
+  },
+  "rawMetadata": "{\"compiler\":{\"version\":\"0.8.21+commit.d9974bed\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"inputs\":[],\"name\":\"increment\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"number\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newNumber\",\"type\":\"uint256\"}],\"name\":\"setNumber\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"src/Counter.sol\":\"Counter\"},\"evmVersion\":\"paris\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":true,\"runs\":200},\"remappings\":[\":@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/\",\":ds-test/=lib/forge-std/lib/ds-test/src/\",\":erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/\",\":forge-std/=lib/forge-std/src/\",\":openzeppelin-contracts/=lib/openzeppelin-contracts/\"]},\"sources\":{\"src/Counter.sol\":{\"keccak256\":\"0x09277f949d59a9521708c870dc39c2c434ad8f86a5472efda6a732ef728c0053\",\"license\":\"UNLICENSED\",\"urls\":[\"bzz-raw://94cd5258357da018bf911aeda60ed9f5b130dce27445669ee200313cd3389200\",\"dweb:/ipfs/QmNbEfWAqXCtfQpk6u7TpGa8sTHXFLpUz7uebz2FVbchSC\"]}},\"version\":1}",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.21+commit.d9974bed"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "increment"
+        },
+        {
+          "inputs": [],
+          "stateMutability": "view",
+          "type": "function",
+          "name": "number",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ]
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "uint256",
+              "name": "newNumber",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "function",
+          "name": "setNumber"
+        }
+      ],
+      "devdoc": {
+        "kind": "dev",
+        "methods": {},
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "version": 1
+      }
+    },
+    "settings": {
+      "remappings": [
+        "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+        "ds-test/=lib/forge-std/lib/ds-test/src/",
+        "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+        "forge-std/=lib/forge-std/src/",
+        "openzeppelin-contracts/=lib/openzeppelin-contracts/"
+      ],
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "compilationTarget": {
+        "src/Counter.sol": "Counter"
+      },
+      "libraries": {}
+    },
+    "sources": {
+      "src/Counter.sol": {
+        "keccak256": "0x09277f949d59a9521708c870dc39c2c434ad8f86a5472efda6a732ef728c0053",
+        "urls": [
+          "bzz-raw://94cd5258357da018bf911aeda60ed9f5b130dce27445669ee200313cd3389200",
+          "dweb:/ipfs/QmNbEfWAqXCtfQpk6u7TpGa8sTHXFLpUz7uebz2FVbchSC"
+        ],
+        "license": "UNLICENSED"
+      }
+    },
+    "version": 1
+  },
+  "ast": {
+    "absolutePath": "src/Counter.sol",
+    "id": 50009,
+    "exportedSymbols": {
+      "Counter": [
+        50008
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "39:219:44",
+    "nodes": [
+      {
+        "id": 49988,
+        "nodeType": "PragmaDirective",
+        "src": "39:24:44",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".13"
+        ]
+      },
+      {
+        "id": 50008,
+        "nodeType": "ContractDefinition",
+        "src": "65:192:44",
+        "nodes": [
+          {
+            "id": 49990,
+            "nodeType": "VariableDeclaration",
+            "src": "88:21:44",
+            "nodes": [],
+            "constant": false,
+            "functionSelector": "8381f58a",
+            "mutability": "mutable",
+            "name": "number",
+            "nameLocation": "103:6:44",
+            "scope": 50008,
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 49989,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "88:7:44",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "visibility": "public"
+          },
+          {
+            "id": 50000,
+            "nodeType": "FunctionDefinition",
+            "src": "116:80:44",
+            "nodes": [],
+            "body": {
+              "id": 49999,
+              "nodeType": "Block",
+              "src": "161:35:44",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "id": 49997,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "id": 49995,
+                      "name": "number",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 49990,
+                      "src": "171:6:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "id": 49996,
+                      "name": "newNumber",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 49992,
+                      "src": "180:9:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "171:18:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 49998,
+                  "nodeType": "ExpressionStatement",
+                  "src": "171:18:44"
+                }
+              ]
+            },
+            "functionSelector": "3fb5c1cb",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "setNumber",
+            "nameLocation": "125:9:44",
+            "parameters": {
+              "id": 49993,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 49992,
+                  "mutability": "mutable",
+                  "name": "newNumber",
+                  "nameLocation": "143:9:44",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 50000,
+                  "src": "135:17:44",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 49991,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "135:7:44",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "134:19:44"
+            },
+            "returnParameters": {
+              "id": 49994,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "161:0:44"
+            },
+            "scope": 50008,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "id": 50007,
+            "nodeType": "FunctionDefinition",
+            "src": "202:53:44",
+            "nodes": [],
+            "body": {
+              "id": 50006,
+              "nodeType": "Block",
+              "src": "230:25:44",
+              "nodes": [],
+              "statements": [
+                {
+                  "expression": {
+                    "id": 50004,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "UnaryOperation",
+                    "operator": "++",
+                    "prefix": false,
+                    "src": "240:8:44",
+                    "subExpression": {
+                      "id": 50003,
+                      "name": "number",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 49990,
+                      "src": "240:6:44",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 50005,
+                  "nodeType": "ExpressionStatement",
+                  "src": "240:8:44"
+                }
+              ]
+            },
+            "functionSelector": "d09de08a",
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "increment",
+            "nameLocation": "211:9:44",
+            "parameters": {
+              "id": 50001,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "220:2:44"
+            },
+            "returnParameters": {
+              "id": 50002,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "230:0:44"
+            },
+            "scope": 50008,
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          }
+        ],
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "Counter",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "linearizedBaseContracts": [
+          50008
+        ],
+        "name": "Counter",
+        "nameLocation": "74:7:44",
+        "scope": 50009,
+        "usedErrors": [],
+        "usedEvents": []
+      }
+    ],
+    "license": "UNLICENSED"
+  },
+  "id": 44
+}

@@ -1,0 +1,21 @@
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "linkReferences": {}
+  },
+  "ast": {
+    "absolutePath": "test/NFT721.t.sol",
+    "id": 1,
+    "exportedSymbols": {},
+    "nodeType": "SourceUnit",
+    "src": "3992:0:0",
+    "nodes": [],
+    "license": "MIT"
+  },
+  "id": 0
+}

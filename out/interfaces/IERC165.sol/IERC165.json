@@ -1,1 +1,64 @@
-{"abi":[],"bytecode":{"object":"0x","linkReferences":{}},"deployedBytecode":{"object":"0x","linkReferences":{}},"ast":{"absolutePath":"lib/openzeppelin-contracts/contracts/interfaces/IERC165.sol","id":45091,"exportedSymbols":{"IERC165":[48802]},"nodeType":"SourceUnit","src":"106:86:22","nodes":[{"id":45088,"nodeType":"PragmaDirective","src":"106:24:22","nodes":[],"literals":["solidity","^","0.8",".20"]},{"id":45090,"nodeType":"ImportDirective","src":"132:59:22","nodes":[],"absolutePath":"lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol","file":"../utils/introspection/IERC165.sol","nameLocation":"-1:-1:-1","scope":45091,"sourceUnit":48803,"symbolAliases":[{"foreign":{"id":45089,"name":"IERC165","nodeType":"Identifier","overloadedDeclarations":[],"referencedDeclaration":48802,"src":"140:7:22","typeDescriptions":{}},"nameLocation":"-1:-1:-1"}],"unitAlias":""}],"license":"MIT"},"id":22}
+{
+  "abi": [],
+  "bytecode": {
+    "object": "0x",
+    "linkReferences": {}
+  },
+  "deployedBytecode": {
+    "object": "0x",
+    "linkReferences": {}
+  },
+  "ast": {
+    "absolutePath": "lib/openzeppelin-contracts/contracts/interfaces/IERC165.sol",
+    "id": 45091,
+    "exportedSymbols": {
+      "IERC165": [
+        48806
+      ]
+    },
+    "nodeType": "SourceUnit",
+    "src": "106:86:22",
+    "nodes": [
+      {
+        "id": 45088,
+        "nodeType": "PragmaDirective",
+        "src": "106:24:22",
+        "nodes": [],
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".20"
+        ]
+      },
+      {
+        "id": 45090,
+        "nodeType": "ImportDirective",
+        "src": "132:59:22",
+        "nodes": [],
+        "absolutePath": "lib/openzeppelin-contracts/contracts/utils/introspection/IERC165.sol",
+        "file": "../utils/introspection/IERC165.sol",
+        "nameLocation": "-1:-1:-1",
+        "scope": 45091,
+        "sourceUnit": 48807,
+        "symbolAliases": [
+          {
+            "foreign": {
+              "id": 45089,
+              "name": "IERC165",
+              "nodeType": "Identifier",
+              "overloadedDeclarations": [],
+              "referencedDeclaration": 48806,
+              "src": "140:7:22",
+              "typeDescriptions": {}
+            },
+            "nameLocation": "-1:-1:-1"
+          }
+        ],
+        "unitAlias": ""
+      }
+    ],
+    "license": "MIT"
+  },
+  "id": 22
+}

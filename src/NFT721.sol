@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.24;
+pragma solidity ^0.8.0;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -9,7 +9,6 @@ import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract HoneyGenesis is ERC721, IERC2981, Ownable {
-
     event NFTMinted(address indexed minter, uint256 amount, uint256 value);
     event FundWithdrawn(address owner, uint256 amount);
 
@@ -41,7 +40,10 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     function mint(uint256 amount) public payable {
         address minter = msg.sender;
         require(msg.value >= amount * getCurrentPrice(), "Insufficient funds");
-        require(tokenId + amount <= TOTAL_SUPPLY_CAP, "Exceeds total supply cap");
+        require(
+            tokenId + amount <= TOTAL_SUPPLY_CAP,
+            "Exceeds total supply cap"
+        );
         require(amount <= MAX_MINT_AMOUNT, "Exceeds max mint amount");
 
         for (uint256 i = 0; i < amount; ++i) {
@@ -59,9 +61,11 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         // bytes32 leaf = keccak256(abi.encodePacked(minter));
         // require(MerkleProof.verify(proofs, merkleRoot, leaf), "Invalid proof, sender is not on VIP whitelist");
         require(msg.value >= amount * MINT_VIP_PRICE, "Insufficient funds");
-        require(tokenId + amount <= VIP_SUPPLY_CAP, "Exceeds total VIP supply cap");
+        require(
+            tokenId + amount <= VIP_SUPPLY_CAP,
+            "Exceeds total VIP supply cap"
+        );
         require(_VIPMintQuota[minter] >= amount, "Exceeds VIP mint quota");
-
 
         _VIPMintQuota[minter] -= amount;
 
@@ -86,7 +90,9 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     // }
 
     function getCurrentPrice() public view returns (uint256) {
-        uint256 priceIncrements = tokenCountNormal / SUPPLY_INCREMENT_STEPSIZE + 1;
+        uint256 priceIncrements = tokenCountNormal /
+            SUPPLY_INCREMENT_STEPSIZE +
+            1;
         return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
     }
 
@@ -113,7 +119,9 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     function getNextNFTPrice() public view returns (uint256) {
         uint256 nexttokenId = tokenCountNormal + SUPPLY_INCREMENT_STEPSIZE;
         if (nexttokenId <= TOTAL_SUPPLY_CAP) {
-            uint256 priceIncrements = (nexttokenId) / SUPPLY_INCREMENT_STEPSIZE + 1;
+            uint256 priceIncrements = (nexttokenId) /
+                SUPPLY_INCREMENT_STEPSIZE +
+                1;
             return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
         } else {
             revert("Max supply reached");
@@ -126,19 +134,29 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     }
 
     // Function to increment the balance of an address
-    function incrementVIPMintQuota(address user, uint256 amount) public onlyOwner {
+    function incrementVIPMintQuota(
+        address user,
+        uint256 amount
+    ) public onlyOwner {
         _VIPMintQuota[user] += amount;
     }
 
     // Override for royalty info to always return the owner as the receiver
-    function royaltyInfo(uint256 /*tokenId*/, uint256 salePrice) external view override returns (address receiver, uint256 royaltyAmount) {
+    function royaltyInfo(
+        uint256 /*tokenId*/,
+        uint256 salePrice
+    ) external view override returns (address receiver, uint256 royaltyAmount) {
         receiver = owner(); // Royalties always go to the owner
-        royaltyAmount = salePrice * 5 / 100; // Assuming a flat 5% royalty
+        royaltyAmount = (salePrice * 5) / 100; // Assuming a flat 5% royalty
         return (receiver, royaltyAmount);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, IERC165) returns (bool) {
-        return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721, IERC165) returns (bool) {
+        return
+            interfaceId == type(IERC2981).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /**
@@ -147,6 +165,7 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
      * by default, can be overridden in child contracts.
      */
     function _baseURI() internal pure override returns (string memory) {
-        return "https://media.istockphoto.com/id/1486357598/photo/coastal-brown-bear-fishing-in-katmai.jpg?s=1024x1024&w=is&k=20&c=CDXisI1NFpmH4oD-TmWVgGCfDUUuoS9jRu_kzzPCe0g=";
+        return
+            "https://media.istockphoto.com/id/1486357598/photo/coastal-brown-bear-fishing-in-katmai.jpg?s=1024x1024&w=is&k=20&c=CDXisI1NFpmH4oD-TmWVgGCfDUUuoS9jRu_kzzPCe0g=";
     }
 }

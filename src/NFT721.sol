@@ -13,15 +13,15 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     event NFTMinted(address indexed minter, uint256 amount, uint256 value);
     event FundWithdrawn(address owner, uint256 amount);
 
-    uint256 private constant TOTAL_SUPPLY_CAP = 5000; // max 5000 NFTs
-    uint256 private constant VIP_SUPPLY_CAP = 1000; // max 1000 NFTs for VIP minting
+    uint256 private constant TOTAL_SUPPLY_CAP = 25; // max 5000 NFTs
+    uint256 private constant VIP_SUPPLY_CAP = 7; // max 1000 NFTs for VIP minting
 
-    uint256 private constant MINT_VIP_PRICE = 0.069 ether; // 0.069 ETH minting fee for VIP
-    uint256 private constant MINT_UNIT_PRICE = 0.07 ether; // 0.07 ETH minting fee for normal wallets
-    uint256 private constant PRICE_INCREMENT = 0.007 ether; // 0.007 ETH price increment
+    uint256 private constant MINT_VIP_PRICE = 0.0000069 ether; // 0.069 ETH minting fee for VIP
+    uint256 private constant MINT_UNIT_PRICE = 0.000007 ether; // 0.07 ETH minting fee for normal wallets
+    uint256 private constant PRICE_INCREMENT = 0.0000007 ether; // 0.007 ETH price increment
 
-    uint256 private constant SUPPLY_INCREMENT_STEPSIZE = 500; // After the first 1000 NFTs, the price will increase every 500 NFTs
-    uint256 private constant MAX_MINT_AMOUNT = 20; // Max 20 NFTs for each normal wallets
+    uint256 private constant SUPPLY_INCREMENT_STEPSIZE = 4; // After the first 1000 NFTs, the price will increase every 500 NFTs
+    uint256 private constant MAX_MINT_AMOUNT = 2; // Max 20 NFTs for each normal wallets
 
     bytes32 public merkleRoot; // The merkle root for whitelist verification
 
@@ -30,7 +30,7 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     uint256 public tokenCountKingdomly;
     uint256 public tokenCountVIP; 
 
-    // mapping(address => uint256) private _alreadyMinted; // whitelisted wallets can only mint once at low price
+    // mapping(address => uint256) private _alreadyMinted; // whitelisted wallets can only mint once at low pricec
     mapping(address => uint256) private _VIPMintQuota; // whitelisted wallets can only mint up to a quota at VIP price
 
     constructor() ERC721("HoneyGenesis", "HONEY") Ownable(msg.sender) {
@@ -61,10 +61,7 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     }
 
     function mintVIP(uint256 amount) public payable {
-        // require(merkleRoot != bytes32(0), "White listing not supported");
         address minter = msg.sender;
-        // bytes32 leaf = keccak256(abi.encodePacked(minter));
-        // require(MerkleProof.verify(proofs, merkleRoot, leaf), "Invalid proof, sender is not on VIP whitelist");
         require(msg.value >= amount * MINT_VIP_PRICE, "Insufficient funds");
         require(tokenId + amount <= VIP_SUPPLY_CAP, "Exceeds total VIP supply cap");
         require(_VIPMintQuota[minter] >= amount, "Exceeds VIP mint quota");
@@ -87,10 +84,6 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
 
         emit FundWithdrawn(owner(), address(this).balance);
     }
-
-    // function setMerkleRoot(bytes32 _merkleRoot) public onlyOwner {
-    //     merkleRoot = _merkleRoot;
-    // }
 
     function getCurrentPrice() public view returns (uint256) {
         uint256 priceIncrements = tokenCountNormal / SUPPLY_INCREMENT_STEPSIZE + 1;
@@ -154,6 +147,6 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
      * by default, can be overridden in child contracts.
      */
     function _baseURI() internal pure override returns (string memory) {
-        return "https://media.istockphoto.com/id/1486357598/photo/coastal-brown-bear-fishing-in-katmai.jpg?s=1024x1024&w=is&k=20&c=CDXisI1NFpmH4oD-TmWVgGCfDUUuoS9jRu_kzzPCe0g=";
+        return "https://bafkreifj2vyb3s77yrafreyoupk4ghjoyqsxiqoot2wjzev5tfstpjeqlm.ipfs.nftstorage.link";
     }
 }

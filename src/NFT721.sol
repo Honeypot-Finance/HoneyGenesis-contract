@@ -55,10 +55,7 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     }
 
     function mintVIP(uint256 amount) public payable {
-        // require(merkleRoot != bytes32(0), "White listing not supported");
         address minter = msg.sender;
-        // bytes32 leaf = keccak256(abi.encodePacked(minter));
-        // require(MerkleProof.verify(proofs, merkleRoot, leaf), "Invalid proof, sender is not on VIP whitelist");
         require(msg.value >= amount * MINT_VIP_PRICE, "Insufficient funds");
         require(tokenId + amount <= VIP_SUPPLY_CAP, "Exceeds total VIP supply cap");
         require(_VIPMintQuota[minter] >= amount, "Exceeds VIP mint quota");
@@ -84,21 +81,6 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
 
         emit FundWithdrawn(owner(), address(this).balance);
     }
-
-    // function getCurrentPrice() public view returns (uint256) {
-    //     uint256 priceIncrements = tokenCountNormal / SUPPLY_INCREMENT_STEPSIZE + 1;
-    //     return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
-    // }
-
-    // function getNextNFTPrice() public view returns (uint256) {
-    //     uint256 nexttokenId = tokenCountNormal + SUPPLY_INCREMENT_STEPSIZE;
-    //     if (nexttokenId <= TOTAL_SUPPLY_CAP) {
-    //         uint256 priceIncrements = nexttokenId / SUPPLY_INCREMENT_STEPSIZE + 1;
-    //         return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
-    //     } else {
-    //         revert("Max supply reached");
-    //     }
-    // }
 
     function getCurrentPrice() public view returns (uint256) {
         _calcPrice(tokenCountNormal);

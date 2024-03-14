@@ -23,15 +23,13 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     uint256 private constant SUPPLY_INCREMENT_STEPSIZE = 500; // After the first 1000 NFTs, the price will increase every 500 NFTs
     uint256 private constant MAX_MINT_AMOUNT = 20; // Max 20 NFTs for each normal wallets
 
-    bytes32 public merkleRoot; // The merkle root for whitelist verification
-
     uint256 public tokenId; // The current token ID
     uint256 public tokenCountNormal; // The current token ID
     uint256 public tokenCountVIP; // The current token ID
 
-    // mapping(address => uint256) private _alreadyMinted; // whitelisted wallets can only mint once at low price
     mapping(address => uint256) private _VIPMintQuota; // whitelisted wallets can only mint up to a quota at VIP price
 
+    error Overflow();
     constructor() ERC721("HoneyGenesis", "HONEY") Ownable(msg.sender) {
         tokenId = 0;
         tokenCountNormal = 0;
@@ -44,10 +42,13 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         require(tokenId + amount <= TOTAL_SUPPLY_CAP, "Exceeds total supply cap");
         require(amount <= MAX_MINT_AMOUNT, "Exceeds max mint amount");
 
-        for (uint256 i = 0; i < amount; ++i) {
+        for (uint256 i = 0; i < amount;) {
             ++tokenCountNormal;
             ++tokenId;
             _safeMint(minter, tokenId);
+            unchecked {
+                ++i;
+            }
         }
 
         emit NFTMinted(minter, amount, msg.value);
@@ -65,10 +66,13 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
 
         _VIPMintQuota[minter] -= amount;
 
-        for (uint256 i = 0; i < amount; ++i) {
+        for (uint256 i = 0; i < amount;) {
             ++tokenId;
             ++tokenCountVIP;
             _safeMint(minter, tokenId);
+            unchecked {
+                ++i;
+            }
         }
 
         emit NFTMinted(minter, amount, msg.value);
@@ -81,13 +85,37 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         emit FundWithdrawn(owner(), address(this).balance);
     }
 
-    // function setMerkleRoot(bytes32 _merkleRoot) public onlyOwner {
-    //     merkleRoot = _merkleRoot;
+    // function getCurrentPrice() public view returns (uint256) {
+    //     uint256 priceIncrements = tokenCountNormal / SUPPLY_INCREMENT_STEPSIZE + 1;
+    //     return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
+    // }
+
+    // function getNextNFTPrice() public view returns (uint256) {
+    //     uint256 nexttokenId = tokenCountNormal + SUPPLY_INCREMENT_STEPSIZE;
+    //     if (nexttokenId <= TOTAL_SUPPLY_CAP) {
+    //         uint256 priceIncrements = nexttokenId / SUPPLY_INCREMENT_STEPSIZE + 1;
+    //         return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
+    //     } else {
+    //         revert("Max supply reached");
+    //     }
     // }
 
     function getCurrentPrice() public view returns (uint256) {
-        uint256 priceIncrements = tokenCountNormal / SUPPLY_INCREMENT_STEPSIZE + 1;
+        _calcPrice(tokenCountNormal);
+    }
+
+    function getNextNFTPrice() public view returns (uint256) {
+        uint256 nexttokenId = tokenCountNormal + SUPPLY_INCREMENT_STEPSIZE;
+        if (nexttokenId > TOTAL_SUPPLY_CAP) {
+            revert Overflow("Max supply reached");
+        }
+        _calcPrice(nexttokenId);
+    }
+
+    function _calcPrice(uint256 priceParam) private view returns (uint256) {
+        uint256 priceIncrements = priceParam / SUPPLY_INCREMENT_STEPSIZE + 1;
         return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
+
     }
 
     function getVIPPrice() public pure returns (uint256) {
@@ -110,16 +138,6 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         return VIP_SUPPLY_CAP;
     }
 
-    function getNextNFTPrice() public view returns (uint256) {
-        uint256 nexttokenId = tokenCountNormal + SUPPLY_INCREMENT_STEPSIZE;
-        if (nexttokenId <= TOTAL_SUPPLY_CAP) {
-            uint256 priceIncrements = (nexttokenId) / SUPPLY_INCREMENT_STEPSIZE + 1;
-            return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
-        } else {
-            revert("Max supply reached");
-        }
-    }
-
     // Function to read the balance of an address
     function getVIPMintQuota(address user) public view returns (uint256) {
         return _VIPMintQuota[user];
@@ -127,6 +145,7 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
 
     // Function to increment the balance of an address
     function incrementVIPMintQuota(address user, uint256 amount) public onlyOwner {
+        require(tokenCountVIP + amount <= VIP_SUPPLY_CAP, "Exceeds total VIP supply cap");
         _VIPMintQuota[user] += amount;
     }
 

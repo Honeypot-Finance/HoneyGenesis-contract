@@ -51,6 +51,11 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         }
 
         emit NFTMinted(minter, amount, msg.value);
+        //Added a refund mechanism in case the user sends too much eth
+        uint256 excess = msg.value - totalCostWithFee;
+        if (excess > 0) {
+            payable(msg.sender).transfer(excess);
+        }
     }
 
     function mintbyKingdomly(uint256 amount) public payable {
@@ -121,13 +126,6 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
 
         emit NFTMinted(minter, amount, msg.value);
     }
-
-    // function withdraw() public onlyOwner {
-    //     (bool success, ) = owner().call{value: address(this).balance}("");
-    //     require(success, "Transfer failed");
-
-    //     emit FundWithdrawn(owner(), address(this).balance);
-    // }
 
     function withdraw() public onlyOwner {
         uint256 balance = address(this).balance;

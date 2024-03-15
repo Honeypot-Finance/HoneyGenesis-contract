@@ -24,13 +24,55 @@ HoneyGenesis honeyGenesis;
     }
 
     function testMint() public {
-        vm.prank(minter);
-        uint256 mintAmount = 2;
-        uint256 mintPrice = honeyGenesis.getCurrentPrice() * mintAmount;
-        vm.deal(minter, mintPrice);
-        honeyGenesis.mint{value: mintPrice}(mintAmount);
+        // Example test: minting within supply limits and with correct payment
+        uint256 mintAmount = 1;
+        uint256 mintPrice = honeyGenesis.getCurrentPrice();
 
-        assertEq(honeyGenesis.balanceOf(minter), mintAmount, "Minter should have the correct amount of NFTs.");
+        // Send enough ETH to mint
+        vm.deal(minter, mintPrice * mintAmount);
+
+        // Assert preconditions
+        assertEq(honeyGenesis.getMintedNFTsCount(), 0);
+
+        // Execute mint function
+        honeyGenesis.mint{value: mintPrice * mintAmount}(mintAmount);
+
+        // Assert postconditions
+        assertEq(honeyGenesis.getMintedNFTsCount(), mintAmount);
+    }
+
+    function testFailMintAboveMaxSupply() public {
+        // This test should fail if trying to mint above the total supply cap
+        uint256 mintAmount = honeyGenesis.getTotalNFTCount() + 1; // More than total supply
+        honeyGenesis.mint{value: honeyGenesis.getCurrentPrice() * mintAmount}(mintAmount);
+    }
+
+    function testFailMintWithoutEnoughETH() public {
+        // This test should fail if not sending enough ETH for mint
+        uint256 mintAmount = 1;
+        honeyGenesis.mint{value: 0}(mintAmount); // Not sending enough ETH
+    }
+
+    function testVIPMint() public {
+        // Test VIP mint functionality
+        address vipMinter = address(2);
+        uint256 vipMintAmount = 2;
+        uint256 vipMintPrice = honeyGenesis.getVIPPrice();
+
+        vm.prank(address(this));
+        honeyGenesis.incrementVIPMintQuota(vipMinter, vipMintAmount);
+        
+        uint256 vipMintQuotaBefore = honeyGenesis.getVIPMintQuota(vipMinter);
+        assertEq(vipMintQuotaBefore, vipMintAmount);
+
+        vm.deal(vipMinter, vipMintPrice * vipMintAmount);
+        vm.startPrank(vipMinter);
+        honeyGenesis.mintVIP{value: vipMintPrice * vipMintAmount}(vipMintAmount);
+        vm.stopPrank();
+
+        uint256 vipMintQuotaAfter = honeyGenesis.getVIPMintQuota(vipMinter);
+        assertEq(vipMintQuotaAfter, 0); // Quota should be used up
+        assertEq(honeyGenesis.getMintedVIPNFTsCount(), vipMintAmount);
     }
 
     function testMintExceedsMaxAmount() public {

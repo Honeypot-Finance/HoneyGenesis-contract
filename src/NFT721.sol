@@ -6,7 +6,6 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
-import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 contract HoneyGenesis is ERC721, IERC2981, Ownable {
 
@@ -54,6 +53,54 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         emit NFTMinted(minter, amount, msg.value);
     }
 
+    function mintbyKingdomly(uint256 amount) public payable {
+        // Since getCurrentPrice is only called in the contract once, its better off to just place it here.
+        // For getting the current price of the mint, it can already be calculated frontend side via calling the public functions
+        uint256 incrementTreshold = tokenCountNormal /
+            SUPPLY_INCREMENT_STEPSIZE +
+            1;
+        uint256 currentPrice = MINT_UNIT_PRICE +
+            (incrementTreshold * PRICE_INCREMENT);
+
+        uint256 totalCost = currentPrice * amount;
+
+        uint256 kingdomlyFee = ((totalCost * 3) / 100) +
+            (1000000000000000 * amount); //$3 in wei + 3% fee
+
+        uint256 totalCostWithFee = totalCost + kingdomlyFee;
+
+        if (msg.value < totalCostWithFee) {
+            revert InsufficientEther({
+                required: totalCostWithFee,
+                provided: msg.value
+            });
+        }
+
+        if (tokenId + amount > TOTAL_SUPPLY_CAP) {
+            revert ExceedsMaxSupply({
+                requested: amount,
+                available: TOTAL_SUPPLY_CAP - tokenId
+            });
+        }
+
+        require(amount <= MAX_MINT_AMOUNT, "Exceeds max mint amount"); // <--- this is abusable, people can just hit mint as many times they want, I suggest using ERC721A _numberMinted soon.
+
+        for (uint256 i = 0; i < amount; ++i) {
+            //<--- this is gas inefficient, you can use batchMint function from ERC721A
+            ++tokenCountNormal;
+            ++tokenId;
+            _safeMint(msg.sender, tokenId);
+        }
+
+        emit NFTMinted(msg.sender, amount, msg.value);
+
+        //Added a refund mechanism in case the user sends too much eth
+        uint256 excess = msg.value - totalCostWithFee;
+        if (excess > 0) {
+            payable(msg.sender).transfer(excess);
+        }
+    }
+
     function mintVIP(uint256 amount) public payable {
         address minter = msg.sender;
         require(msg.value >= amount * MINT_VIP_PRICE, "Insufficient funds");
@@ -75,11 +122,23 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
         emit NFTMinted(minter, amount, msg.value);
     }
 
+    // function withdraw() public onlyOwner {
+    //     (bool success, ) = owner().call{value: address(this).balance}("");
+    //     require(success, "Transfer failed");
+
+    //     emit FundWithdrawn(owner(), address(this).balance);
+    // }
+
     function withdraw() public onlyOwner {
+        uint256 balance = address(this).balance;
+        require(balance > 0, "No funds to withdraw");
+
+        // Updating the state before the transfer for prevention of reentrancy attacks
+        emit FundWithdrawn(owner(), balance);
+
+        // Interaction
         (bool success, ) = owner().call{value: address(this).balance}("");
         require(success, "Transfer failed");
-
-        emit FundWithdrawn(owner(), address(this).balance);
     }
 
     function getCurrentPrice() public view returns (uint256) {

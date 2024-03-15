@@ -3,11 +3,11 @@
 pragma solidity 0.8.24;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721A} from "@openzeppelin/contracts/token/ERC721A/ERC721A.sol";
 import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-contract HoneyGenesis is ERC721, IERC2981, Ownable {
+contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
     event NFTMinted(address indexed minter, uint256 amount, uint256 value);
     event FundWithdrawn(address owner, uint256 amount);
@@ -36,7 +36,7 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
     }
 
     function mint(uint256 amount) public payable {
-        address minter = msg.sender;
+        uint256 totalCostWithFee = totalCost;
         require(msg.value >= amount * getCurrentPrice(), "Insufficient funds");
         require(tokenId + amount <= TOTAL_SUPPLY_CAP, "Exceeds total supply cap");
         require(amount <= MAX_MINT_AMOUNT, "Exceeds max mint amount");
@@ -52,21 +52,14 @@ contract HoneyGenesis is ERC721, IERC2981, Ownable {
 
         emit NFTMinted(minter, amount, msg.value);
         //Added a refund mechanism in case the user sends too much eth
-        uint256 excess = msg.value - totalCostWithFee;
+        uint256 excess = msg.value - totalCost;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
     }
 
     function mintbyKingdomly(uint256 amount) public payable {
-        // Since getCurrentPrice is only called in the contract once, its better off to just place it here.
-        // For getting the current price of the mint, it can already be calculated frontend side via calling the public functions
-        uint256 incrementTreshold = tokenCountNormal /
-            SUPPLY_INCREMENT_STEPSIZE +
-            1;
-        uint256 currentPrice = MINT_UNIT_PRICE +
-            (incrementTreshold * PRICE_INCREMENT);
-
+        uint256 currentPrice = _calcPrice(tokenCountNormal);
         uint256 totalCost = currentPrice * amount;
 
         uint256 kingdomlyFee = ((totalCost * 3) / 100) +

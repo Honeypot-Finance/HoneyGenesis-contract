@@ -3,7 +3,7 @@
 pragma solidity 0.8.24;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {ERC721A} from "@openzeppelin/contracts/token/ERC721A/ERC721A.sol";
+import {ERC721A} from "ERC721A/ERC721A.sol";
 import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
@@ -12,7 +12,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     event NFTMinted(address indexed minter, uint256 amount, uint256 value);
     event FundWithdrawn(address owner, uint256 amount);
 
-    uint256 private constant TOTAL_SUPPLY_CAP = 5000; // max 5000 NFTs
+    uint256 private constant TOTAL_SUPPLY_CAP = 5000; // max 5000 NFTs normal minting
     uint256 private constant VIP_SUPPLY_CAP = 1000; // max 1000 NFTs for VIP minting
 
     uint256 private constant MINT_VIP_PRICE = 0.069 ether; // 0.069 ETH minting fee for VIP
@@ -22,33 +22,43 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     uint256 private constant SUPPLY_INCREMENT_STEPSIZE = 500; // After the first 1000 NFTs, the price will increase every 500 NFTs
     uint256 private constant MAX_MINT_AMOUNT = 20; // Max 20 NFTs for each normal wallets
 
-    uint256 public tokenId; // The current token ID
-    uint256 public tokenCountNormal; // The current token ID
-    uint256 public tokenCountVIP; // The current token ID
+    uint256 public tokenCountNormal; // normal minted NFTs
+    uint256 public tokenCountVIP; // vip minted NFTs
 
     mapping(address => uint256) private _VIPMintQuota; // whitelisted wallets can only mint up to a quota at VIP price
 
     error Overflow();
-    constructor() ERC721("HoneyGenesis", "HONEY") Ownable(msg.sender) {
-        tokenId = 0;
+    error InsufficientEther(uint256 required, uint256 provided);
+    error ExceedsMaxSupply(uint256 requested, uint256 available);
+    error ExceedsVIPMaxSupply(uint256 requested, uint256 available);
+    
+    constructor() ERC721A("HoneyGenesis", "HONEY") Ownable(msg.sender) {
         tokenCountNormal = 0;
         tokenCountVIP = 0;
     }
 
     function mint(uint256 amount) public payable {
-        uint256 totalCostWithFee = totalCost;
-        require(msg.value >= amount * getCurrentPrice(), "Insufficient funds");
-        require(tokenId + amount <= TOTAL_SUPPLY_CAP, "Exceeds total supply cap");
+        address minter = msg.sender;
+        uint256 totalCost = amount * _calcPrice(tokenCountNormal);
+        
+        if (msg.value < totalCost) {
+            revert InsufficientEther({
+                required: totalCost,
+                provided: msg.value
+            });
+        }
+
+        if (tokenCountNormal + amount > TOTAL_SUPPLY_CAP) {
+            revert ExceedsMaxSupply({
+                requested: amount,
+                available: TOTAL_SUPPLY_CAP - tokenCountNormal
+            });
+        }
+
         require(amount <= MAX_MINT_AMOUNT, "Exceeds max mint amount");
 
-        for (uint256 i = 0; i < amount;) {
-            ++tokenCountNormal;
-            ++tokenId;
-            _safeMint(minter, tokenId);
-            unchecked {
-                ++i;
-            }
-        }
+        _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
+        tokenCountNormal += amount;
 
         emit NFTMinted(minter, amount, msg.value);
         //Added a refund mechanism in case the user sends too much eth
@@ -74,21 +84,17 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
             });
         }
 
-        if (tokenId + amount > TOTAL_SUPPLY_CAP) {
+        if (tokenCountNormal + amount > TOTAL_SUPPLY_CAP) {
             revert ExceedsMaxSupply({
                 requested: amount,
-                available: TOTAL_SUPPLY_CAP - tokenId
+                available: TOTAL_SUPPLY_CAP - tokenCountNormal
             });
         }
 
         require(amount <= MAX_MINT_AMOUNT, "Exceeds max mint amount"); // <--- this is abusable, people can just hit mint as many times they want, I suggest using ERC721A _numberMinted soon.
 
-        for (uint256 i = 0; i < amount; ++i) {
-            //<--- this is gas inefficient, you can use batchMint function from ERC721A
-            ++tokenCountNormal;
-            ++tokenId;
-            _safeMint(msg.sender, tokenId);
-        }
+        _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
+        tokenCountNormal += amount;
 
         emit NFTMinted(msg.sender, amount, msg.value);
 
@@ -101,23 +107,36 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
     function mintVIP(uint256 amount) public payable {
         address minter = msg.sender;
-        require(msg.value >= amount * MINT_VIP_PRICE, "Insufficient funds");
-        require(tokenId + amount <= VIP_SUPPLY_CAP, "Exceeds total VIP supply cap");
+        uint256 totalCost = amount * MINT_VIP_PRICE;
+
+        if (msg.value < totalCost) {
+            revert InsufficientEther({
+                required: totalCost,
+                provided: msg.value
+            });
+        }
+
+        if (tokenCountVIP + amount > VIP_SUPPLY_CAP) {
+            revert ExceedsVIPMaxSupply({
+                requested: amount,
+                available: VIP_SUPPLY_CAP - tokenCountVIP
+            });
+        }
+
         require(_VIPMintQuota[minter] >= amount, "Exceeds VIP mint quota");
 
 
         _VIPMintQuota[minter] -= amount;
 
-        for (uint256 i = 0; i < amount;) {
-            ++tokenId;
-            ++tokenCountVIP;
-            _safeMint(minter, tokenId);
-            unchecked {
-                ++i;
-            }
-        }
+        _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
+        tokenCountVIP += amount;
 
         emit NFTMinted(minter, amount, msg.value);
+        //Added a refund mechanism in case the user sends too much eth
+        uint256 excess = msg.value - totalCost;
+        if (excess > 0) {
+            payable(msg.sender).transfer(excess);
+        }
     }
 
     function withdraw() public onlyOwner {
@@ -133,18 +152,18 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     }
 
     function getCurrentPrice() public view returns (uint256) {
-        _calcPrice(tokenCountNormal);
+        return _calcPrice(tokenCountNormal);
     }
 
     function getNextNFTPrice() public view returns (uint256) {
         uint256 nexttokenId = tokenCountNormal + SUPPLY_INCREMENT_STEPSIZE;
         if (nexttokenId > TOTAL_SUPPLY_CAP) {
-            revert Overflow("Max supply reached");
+            revert Overflow();
         }
-        _calcPrice(nexttokenId);
+        return _calcPrice(nexttokenId);
     }
 
-    function _calcPrice(uint256 priceParam) private view returns (uint256) {
+    function _calcPrice(uint256 priceParam) private pure returns (uint256) {
         uint256 priceIncrements = priceParam / SUPPLY_INCREMENT_STEPSIZE + 1;
         return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
 
@@ -188,7 +207,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         return (receiver, royaltyAmount);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721A, IERC165) returns (bool) {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
 

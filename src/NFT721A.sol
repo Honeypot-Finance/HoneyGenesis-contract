@@ -10,6 +10,10 @@ import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     event NFTMinted(address indexed minter, uint256 amount, uint256 value);
     event FundWithdrawn(address owner, uint256 amount);
+    event BatchMetadataUpdate(
+        uint256 indexed fromTokenId,
+        uint256 indexed toTokenId
+    );
 
     uint256 private constant TOTAL_SUPPLY_CAP = 5000; // max 5000 NFTs normal minting
     uint256 private constant VIP_SUPPLY_CAP = 1000; // max 1000 NFTs for VIP minting
@@ -29,6 +33,9 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     //Kingdomly edits
     address private KPA = 0x428Deb81A93BeD820068724eb1fCc7503d71e417;
     address private HGPA = 0x428Deb81A93BeD820068724eb1fCc7503d71e417; // Please change your fee address here! You can also connect the multisig wallet here instead.
+    uint256 private constant THREEDOLLARS_ETH = 900000000000000; // $3 ETH (last checked Mar 19 2024 1:10 PM UTC+08)
+
+    string public baseURI;
 
     mapping(address => uint256) private pendingBalances; // Payout mapping
 
@@ -37,28 +44,24 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     error ExceedsMaxSupply(uint256 requested, uint256 available);
     error ExceedsVIPMaxSupply(uint256 requested, uint256 available);
 
-    constructor() ERC721A("HoneyGenesis", "HONEY") Ownable(msg.sender) {
+    constructor(
+        string memory _initialBaseURI
+    ) ERC721A("HoneyGenesis", "HONEY") Ownable(msg.sender) {
         tokenCountNormal = 0;
         tokenCountVIP = 0;
+        baseURI = _initialBaseURI; // Set baseURI
     }
 
     function mint(uint256 amount) public payable {
         address minter = msg.sender;
         uint256 totalCost = amount * _calcPrice(tokenCountNormal);
 
-        // Three % fee
-        uint256 threePercentFee = ((totalCost * 3) / 100); //3% fee
-
         // Kingdomly Fees
-        uint256 kingdomlyThreeDollars = (1000000000000000 * amount); //$3 kingdomly fee
+        uint256 kingdomlyThreeDollars = (THREEDOLLARS_ETH * amount); //$3 kingdomly fee
 
-        uint256 totalCostWithFee = totalCost +
-            threePercentFee +
-            kingdomlyThreeDollars;
-
-        if (msg.value < totalCostWithFee) {
+        if (msg.value < totalCost) {
             revert InsufficientEther({
-                required: totalCostWithFee,
+                required: totalCost,
                 provided: msg.value
             });
         }
@@ -76,7 +79,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         ); // Modified this to check also _numberMinted() to limit max mints
 
         //Implemented payout system
-        pendingBalances[HGPA] += totalCost + threePercentFee;
+        pendingBalances[HGPA] += totalCost - kingdomlyThreeDollars; // To owner
         pendingBalances[KPA] += kingdomlyThreeDollars;
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
@@ -84,7 +87,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
         emit NFTMinted(minter, amount, msg.value);
         //Added a refund mechanism in case the user sends too much eth
-        uint256 excess = msg.value - totalCostWithFee;
+        uint256 excess = msg.value - totalCost;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
@@ -95,13 +98,11 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         uint256 totalCost = currentPrice * amount;
 
         uint256 kingdomlyFee = ((totalCost * 3) / 100) +
-            (1000000000000000 * amount); //$3 in wei + 3% fee
+            (THREEDOLLARS_ETH * amount); //$3 in wei + 3% fee
 
-        uint256 totalCostWithFee = totalCost + kingdomlyFee;
-
-        if (msg.value < totalCostWithFee) {
+        if (msg.value < totalCost) {
             revert InsufficientEther({
-                required: totalCostWithFee,
+                required: totalCost,
                 provided: msg.value
             });
         }
@@ -119,7 +120,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         ); // Modified this to check also _numberMinted() to limit max mints
 
         // Update balances
-        pendingBalances[HGPA] += totalCost; // To owner
+        pendingBalances[HGPA] += totalCost - kingdomlyFee; // To owner
         pendingBalances[KPA] += kingdomlyFee; // Fee portion
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
@@ -128,7 +129,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         emit NFTMinted(msg.sender, amount, msg.value);
 
         //Added a refund mechanism in case the user sends too much eth
-        uint256 excess = msg.value - totalCostWithFee;
+        uint256 excess = msg.value - totalCost;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
@@ -138,18 +139,12 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         address minter = msg.sender;
         uint256 totalCost = amount * MINT_VIP_PRICE;
 
-        uint256 threePercentFee = ((totalCost * 3) / 100); //3% fee
-
         // Kingdomly Fees
-        uint256 kingdomlyThreeDollars = (1000000000000000 * amount); //$3 kingdomly fee
+        uint256 kingdomlyThreeDollars = (THREEDOLLARS_ETH * amount); //$3 kingdomly fee
 
-        uint256 totalCostWithFee = totalCost +
-            threePercentFee +
-            kingdomlyThreeDollars;
-
-        if (msg.value < totalCostWithFee) {
+        if (msg.value < totalCost) {
             revert InsufficientEther({
-                required: totalCostWithFee,
+                required: totalCost,
                 provided: msg.value
             });
         }
@@ -166,7 +161,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         _VIPMintQuota[minter] -= amount;
 
         // Update balances
-        pendingBalances[HGPA] += totalCost + threePercentFee; // To owner
+        pendingBalances[HGPA] += totalCost - kingdomlyThreeDollars; // To owner
         pendingBalances[KPA] += kingdomlyThreeDollars; // Fee portion
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
@@ -174,7 +169,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
         emit NFTMinted(minter, amount, msg.value);
         //Added a refund mechanism in case the user sends too much eth
-        uint256 excess = msg.value - totalCostWithFee;
+        uint256 excess = msg.value - totalCost;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
@@ -277,6 +272,22 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         return (receiver, royaltyAmount);
     }
 
+    // Sets the base URI for the token metadata. Only the contract owner can call this function.
+    function setBaseURI(string memory newBaseURI) public onlyOwner {
+        baseURI = newBaseURI;
+        emit BatchMetadataUpdate(1, type(uint256).max); // Signal that all token metadata has been updated
+    }
+
+    // Checks the balance pending withdrawal for the sender.
+    function checkPendingBalance() public view returns (uint256) {
+        return pendingBalances[msg.sender];
+    }
+
+    // Overrides the start token ID function from the ERC721A contract.
+    function _startTokenId() internal view virtual override returns (uint256) {
+        return 1;
+    }
+
     function supportsInterface(
         bytes4 interfaceId
     ) public view override(ERC721A, IERC165) returns (bool) {
@@ -285,13 +296,8 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
             super.supportsInterface(interfaceId);
     }
 
-    /**
-     * @dev Base URI for computing {tokenURI}. If set, the resulting URI for each
-     * token will be the concatenation of the `baseURI` and the `tokenId`. Empty
-     * by default, can be overridden in child contracts.
-     */
-    function _baseURI() internal pure override returns (string memory) {
-        return
-            "https://bafkreifj2vyb3s77yrafreyoupk4ghjoyqsxiqoot2wjzev5tfstpjeqlm.ipfs.nftstorage.link";
+    // Returns the base URI for the token metadata.
+    function _baseURI() internal view override returns (string memory) {
+        return baseURI;
     }
 }

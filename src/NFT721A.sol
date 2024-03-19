@@ -8,7 +8,6 @@ import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 contract HoneyGenesis is ERC721A, IERC2981, Ownable {
-
     event NFTMinted(address indexed minter, uint256 amount, uint256 value);
     event FundWithdrawn(address owner, uint256 amount);
 
@@ -27,11 +26,17 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
     mapping(address => uint256) private _VIPMintQuota; // whitelisted wallets can only mint up to a quota at VIP price
 
+    //Kingdomly edits
+    address private KPA = 0x428Deb81A93BeD820068724eb1fCc7503d71e417;
+    address private HGPA = 0x428Deb81A93BeD820068724eb1fCc7503d71e417; // Please change your fee address here! You can also connect the multisig wallet here instead.
+
+    mapping(address => uint256) private pendingBalances; // Payout mapping
+
     error Overflow();
     error InsufficientEther(uint256 required, uint256 provided);
     error ExceedsMaxSupply(uint256 requested, uint256 available);
     error ExceedsVIPMaxSupply(uint256 requested, uint256 available);
-    
+
     constructor() ERC721A("HoneyGenesis", "HONEY") Ownable(msg.sender) {
         tokenCountNormal = 0;
         tokenCountVIP = 0;
@@ -40,10 +45,20 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     function mint(uint256 amount) public payable {
         address minter = msg.sender;
         uint256 totalCost = amount * _calcPrice(tokenCountNormal);
-        
-        if (msg.value < totalCost) {
+
+        // Three % fee
+        uint256 threePercentFee = ((totalCost * 3) / 100); //3% fee
+
+        // Kingdomly Fees
+        uint256 kingdomlyThreeDollars = (1000000000000000 * amount); //$3 kingdomly fee
+
+        uint256 totalCostWithFee = totalCost +
+            threePercentFee +
+            kingdomlyThreeDollars;
+
+        if (msg.value < totalCostWithFee) {
             revert InsufficientEther({
-                required: totalCost,
+                required: totalCostWithFee,
                 provided: msg.value
             });
         }
@@ -55,14 +70,21 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
             });
         }
 
-        require(amount <= MAX_MINT_AMOUNT, "Exceeds max mint amount");
+        require(
+            amount + _numberMinted(msg.sender) <= MAX_MINT_AMOUNT,
+            "Exceeds max mint amount"
+        ); // Modified this to check also _numberMinted() to limit max mints
+
+        //Implemented payout system
+        pendingBalances[HGPA] += totalCost + threePercentFee;
+        pendingBalances[KPA] += kingdomlyThreeDollars;
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
         tokenCountNormal += amount;
 
         emit NFTMinted(minter, amount, msg.value);
         //Added a refund mechanism in case the user sends too much eth
-        uint256 excess = msg.value - totalCost;
+        uint256 excess = msg.value - totalCostWithFee;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
@@ -91,7 +113,14 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
             });
         }
 
-        require(amount <= MAX_MINT_AMOUNT, "Exceeds max mint amount"); // <--- this is abusable, people can just hit mint as many times they want, I suggest using ERC721A _numberMinted soon.
+        require(
+            amount + _numberMinted(msg.sender) <= MAX_MINT_AMOUNT,
+            "Exceeds max mint amount"
+        ); // Modified this to check also _numberMinted() to limit max mints
+
+        // Update balances
+        pendingBalances[HGPA] += totalCost; // To owner
+        pendingBalances[KPA] += kingdomlyFee; // Fee portion
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
         tokenCountNormal += amount;
@@ -109,9 +138,18 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         address minter = msg.sender;
         uint256 totalCost = amount * MINT_VIP_PRICE;
 
-        if (msg.value < totalCost) {
+        uint256 threePercentFee = ((totalCost * 3) / 100); //3% fee
+
+        // Kingdomly Fees
+        uint256 kingdomlyThreeDollars = (1000000000000000 * amount); //$3 kingdomly fee
+
+        uint256 totalCostWithFee = totalCost +
+            threePercentFee +
+            kingdomlyThreeDollars;
+
+        if (msg.value < totalCostWithFee) {
             revert InsufficientEther({
-                required: totalCost,
+                required: totalCostWithFee,
                 provided: msg.value
             });
         }
@@ -125,29 +163,53 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
         require(_VIPMintQuota[minter] >= amount, "Exceeds VIP mint quota");
 
-
         _VIPMintQuota[minter] -= amount;
+
+        // Update balances
+        pendingBalances[HGPA] += totalCost + threePercentFee; // To owner
+        pendingBalances[KPA] += kingdomlyThreeDollars; // Fee portion
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
         tokenCountVIP += amount;
 
         emit NFTMinted(minter, amount, msg.value);
         //Added a refund mechanism in case the user sends too much eth
-        uint256 excess = msg.value - totalCost;
+        uint256 excess = msg.value - totalCostWithFee;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
     }
 
+    // UPDATED WITHDRAW FUNCTION
     function withdraw() public onlyOwner {
-        uint256 balance = address(this).balance;
-        require(balance > 0, "No funds to withdraw");
+        // Checker
+        require(pendingBalances[HGPA] > 0, "No funds to withdraw");
 
-        // Updating the state before the transfer for prevention of reentrancy attacks
-        emit FundWithdrawn(owner(), balance);
+        uint256 ownerPayout = pendingBalances[HGPA];
+        uint256 fee = pendingBalances[KPA];
 
-        // Interaction
-        (bool success, ) = owner().call{value: address(this).balance}("");
+        // Set state to 0
+        pendingBalances[HGPA] = 0;
+        pendingBalances[KPA] = 0; // We also included our address
+
+        // Transaction
+        (bool success1, ) = payable(HGPA).call{value: ownerPayout}("");
+        (bool success2, ) = payable(KPA).call{value: fee}(""); // We also included our address
+
+        require(success1 && success2, "Transfer failed");
+    }
+
+    // KINGDOMLY WITHDRAW FUNCTION
+    function withdrawFeeFunds() public {
+        // Checker
+        require(msg.sender != KPA, "Unauthorized, not the Kingdomly Address");
+        require(pendingBalances[KPA] > 0, "No funds to withdraw");
+
+        // Set state to 0
+        uint256 fee = pendingBalances[KPA];
+        pendingBalances[KPA] = 0;
+
+        (bool success, ) = payable(KPA).call{value: fee}("");
         require(success, "Transfer failed");
     }
 
@@ -166,7 +228,6 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     function _calcPrice(uint256 priceParam) private pure returns (uint256) {
         uint256 priceIncrements = priceParam / SUPPLY_INCREMENT_STEPSIZE + 1;
         return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
-
     }
 
     function getVIPPrice() public pure returns (uint256) {
@@ -195,20 +256,33 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     }
 
     // Function to increment the balance of an address
-    function incrementVIPMintQuota(address user, uint256 amount) public onlyOwner {
-        require(tokenCountVIP + amount <= VIP_SUPPLY_CAP, "Exceeds total VIP supply cap");
+    function incrementVIPMintQuota(
+        address user,
+        uint256 amount
+    ) public onlyOwner {
+        require(
+            tokenCountVIP + amount <= VIP_SUPPLY_CAP,
+            "Exceeds total VIP supply cap"
+        );
         _VIPMintQuota[user] += amount;
     }
 
     // Override for royalty info to always return the owner as the receiver
-    function royaltyInfo(uint256 /*tokenId*/, uint256 salePrice) external view override returns (address receiver, uint256 royaltyAmount) {
+    function royaltyInfo(
+        uint256 /*tokenId*/,
+        uint256 salePrice
+    ) external view override returns (address receiver, uint256 royaltyAmount) {
         receiver = owner(); // Royalties always go to the owner
-        royaltyAmount = salePrice * 5 / 100; // Assuming a flat 5% royalty
+        royaltyAmount = (salePrice * 5) / 100; // Assuming a flat 5% royalty
         return (receiver, royaltyAmount);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721A, IERC165) returns (bool) {
-        return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721A, IERC165) returns (bool) {
+        return
+            interfaceId == type(IERC2981).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /**
@@ -217,6 +291,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
      * by default, can be overridden in child contracts.
      */
     function _baseURI() internal pure override returns (string memory) {
-        return "https://bafkreifj2vyb3s77yrafreyoupk4ghjoyqsxiqoot2wjzev5tfstpjeqlm.ipfs.nftstorage.link";
+        return
+            "https://bafkreifj2vyb3s77yrafreyoupk4ghjoyqsxiqoot2wjzev5tfstpjeqlm.ipfs.nftstorage.link";
     }
 }

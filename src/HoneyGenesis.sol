@@ -12,15 +12,15 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     event FundWithdrawn(address owner, uint256 amount);
     event BatchMetadataUpdate(uint256 indexed fromTokenId, uint256 indexed toTokenId);
 
-    uint256 private constant TOTAL_SUPPLY_CAP = 5000; // max 5000 NFTs normal minting
+    uint256 public constant TOTAL_SUPPLY_CAP = 5000; // max 5000 NFTs normal minting
     uint256 private constant VIP_SUPPLY_CAP = 1000; // max 1000 NFTs for VIP minting
 
     uint256 private constant MINT_VIP_PRICE = 0.069 ether; // 0.069 ETH minting fee for VIP
-    uint256 private constant MINT_UNIT_PRICE = 0.07 ether; // 0.07 ETH minting fee for normal wallets
-    uint256 private constant PRICE_INCREMENT = 0.007 ether; // 0.007 ETH price increment
+    uint256 public constant MINT_UNIT_PRICE = 0.07 ether; // 0.07 ETH minting fee for normal wallets
+    uint256 public constant PRICE_INCREMENT = 0.007 ether; // 0.007 ETH price increment
 
     uint256 private constant SUPPLY_INCREMENT_STEPSIZE = 500; // After the first 1000 NFTs, the price will increase every 500 NFTs
-    uint256 private constant MAX_MINT_AMOUNT = 20; // Max 20 NFTs for each normal wallets
+    uint256 public constant MAX_MINT_AMOUNT = 20; // Max 20 NFTs for each normal wallets
 
     uint256 public tokenCountNormal; // normal minted NFTs
     uint256 public tokenCountVIP; // vip minted NFTs
@@ -173,7 +173,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
     // KINGDOMLY WITHDRAW FUNCTION
     function withdrawFeeFunds() public {
-        // Checker
+        // Check
         require(msg.sender != KPA, "Unauthorized, not the Kingdomly Address");
         require(pendingBalances[KPA] > 0, "No funds to withdraw");
 
@@ -204,18 +204,6 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
     function getVIPPrice() public pure returns (uint256) {
         return MINT_VIP_PRICE;
-    }
-
-    function getMintedNFTsCount() public view returns (uint256) {
-        return tokenCountNormal;
-    }
-
-    function getMintedVIPNFTsCount() public view returns (uint256) {
-        return tokenCountVIP;
-    }
-
-    function getTotalNFTCount() public pure returns (uint256) {
-        return TOTAL_SUPPLY_CAP;
     }
 
     function getTotalVIPNFTCount() public pure returns (uint256) {

@@ -59,9 +59,11 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         // Kingdomly Fees
         uint256 kingdomlyThreeDollars = (THREEDOLLARS_ETH * amount); //$3 kingdomly fee
 
-        if (msg.value < totalCost) {
+        uint256 totalCostWithFees = totalCost + kingdomlyThreeDollars;
+
+        if (msg.value < totalCostWithFees) {
             revert InsufficientEther({
-                required: totalCost,
+                required: totalCostWithFees,
                 provided: msg.value
             });
         }
@@ -79,7 +81,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         ); // Modified this to check also _numberMinted() to limit max mints
 
         //Implemented payout system
-        pendingBalances[HGPA] += totalCost - kingdomlyThreeDollars; // To owner
+        pendingBalances[HGPA] += totalCost; // To owner
         pendingBalances[KPA] += kingdomlyThreeDollars;
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
@@ -87,7 +89,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
         emit NFTMinted(minter, amount, msg.value);
         //Added a refund mechanism in case the user sends too much eth
-        uint256 excess = msg.value - totalCost;
+        uint256 excess = msg.value - totalCostWithFees;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
@@ -100,9 +102,11 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         uint256 kingdomlyFee = ((totalCost * 3) / 100) +
             (THREEDOLLARS_ETH * amount); //$3 in wei + 3% fee
 
-        if (msg.value < totalCost) {
+         uint256 totalCostWithFees = totalCost + kingdomlyFee;
+
+        if (msg.value < totalCostWithFees) {
             revert InsufficientEther({
-                required: totalCost,
+                required: totalCostWithFees,
                 provided: msg.value
             });
         }
@@ -120,7 +124,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         ); // Modified this to check also _numberMinted() to limit max mints
 
         // Update balances
-        pendingBalances[HGPA] += totalCost - kingdomlyFee; // To owner
+        pendingBalances[HGPA] += totalCost; // To owner
         pendingBalances[KPA] += kingdomlyFee; // Fee portion
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
@@ -129,7 +133,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         emit NFTMinted(msg.sender, amount, msg.value);
 
         //Added a refund mechanism in case the user sends too much eth
-        uint256 excess = msg.value - totalCost;
+        uint256 excess = msg.value - totalCostWithFees;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }
@@ -142,9 +146,11 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         // Kingdomly Fees
         uint256 kingdomlyThreeDollars = (THREEDOLLARS_ETH * amount); //$3 kingdomly fee
 
-        if (msg.value < totalCost) {
+        uint256 totalCostWithFees = totalCost + kingdomlyThreeDollars;
+
+        if (msg.value < totalCostWithFees) {
             revert InsufficientEther({
-                required: totalCost,
+                required: totalCostWithFees,
                 provided: msg.value
             });
         }
@@ -161,7 +167,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         _VIPMintQuota[minter] -= amount;
 
         // Update balances
-        pendingBalances[HGPA] += totalCost - kingdomlyThreeDollars; // To owner
+        pendingBalances[HGPA] += totalCost; // To owner
         pendingBalances[KPA] += kingdomlyThreeDollars; // Fee portion
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
@@ -169,7 +175,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
         emit NFTMinted(minter, amount, msg.value);
         //Added a refund mechanism in case the user sends too much eth
-        uint256 excess = msg.value - totalCost;
+        uint256 excess = msg.value - totalCostWithFees;
         if (excess > 0) {
             payable(msg.sender).transfer(excess);
         }

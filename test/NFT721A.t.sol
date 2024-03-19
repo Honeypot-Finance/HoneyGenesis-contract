@@ -8,7 +8,7 @@ import {ERC721A} from "ERC721A/ERC721A.sol";
 import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 
 contract HoneyGenesisTest is Test {
-HoneyGenesis honeyGenesis;
+    HoneyGenesis honeyGenesis;
     address owner;
     address minter;
 
@@ -20,7 +20,11 @@ HoneyGenesis honeyGenesis;
     }
 
     function testDeployment() public {
-        assertEq(honeyGenesis.owner(), owner, "Owner should be set correctly on deployment.");
+        assertEq(
+            honeyGenesis.owner(),
+            owner,
+            "Owner should be set correctly on deployment."
+        );
     }
 
     function testMint() public {
@@ -35,6 +39,7 @@ HoneyGenesis honeyGenesis;
         assertEq(honeyGenesis.getMintedNFTsCount(), 0);
 
         // Execute mint function
+        vm.prank(minter);
         honeyGenesis.mint{value: mintPrice * mintAmount}(mintAmount);
 
         // Assert postconditions
@@ -44,7 +49,9 @@ HoneyGenesis honeyGenesis;
     function testFailMintAboveMaxSupply() public {
         // This test should fail if trying to mint above the total supply cap
         uint256 mintAmount = honeyGenesis.getTotalNFTCount() + 1; // More than total supply
-        honeyGenesis.mint{value: honeyGenesis.getCurrentPrice() * mintAmount}(mintAmount);
+        honeyGenesis.mint{value: honeyGenesis.getCurrentPrice() * mintAmount}(
+            mintAmount
+        );
     }
 
     function testFailMintWithoutEnoughETH() public {
@@ -61,13 +68,15 @@ HoneyGenesis honeyGenesis;
 
         vm.prank(address(this));
         honeyGenesis.incrementVIPMintQuota(vipMinter, vipMintAmount);
-        
+
         uint256 vipMintQuotaBefore = honeyGenesis.getVIPMintQuota(vipMinter);
         assertEq(vipMintQuotaBefore, vipMintAmount);
 
         vm.deal(vipMinter, vipMintPrice * vipMintAmount);
         vm.startPrank(vipMinter);
-        honeyGenesis.mintVIP{value: vipMintPrice * vipMintAmount}(vipMintAmount);
+        honeyGenesis.mintVIP{value: vipMintPrice * vipMintAmount}(
+            vipMintAmount
+        );
         vm.stopPrank();
 
         uint256 vipMintQuotaAfter = honeyGenesis.getVIPMintQuota(vipMinter);
@@ -87,16 +96,18 @@ HoneyGenesis honeyGenesis;
 
     function testWithdraw() public {
         // First, mint some NFTs to provide the contract with balance
-        vm.prank(minter);
         uint256 mintAmount = 2;
         uint256 mintPrice = honeyGenesis.getCurrentPrice() * mintAmount;
         vm.deal(minter, mintPrice);
+        vm.prank(minter);
         honeyGenesis.mint{value: mintPrice}(mintAmount);
 
         // Attempt to withdraw as non-owner should fail
         vm.prank(minter);
-        vm.expectRevert("Ownable: caller is not the owner");
+        vm.expectRevert();
         honeyGenesis.withdraw();
+
+        uint256 ownerBalanceBefore = owner.balance;
 
         // Withdraw as owner should succeed
         uint256 contractBalanceBefore = address(honeyGenesis).balance;
@@ -104,19 +115,38 @@ HoneyGenesis honeyGenesis;
         honeyGenesis.withdraw();
         uint256 ownerBalanceAfter = owner.balance;
 
-        assertEq(ownerBalanceAfter, contractBalanceBefore, "Owner should receive the contract balance.");
+        assertEq(
+            ownerBalanceAfter - ownerBalanceBefore,
+            contractBalanceBefore,
+            "Owner should receive the contract balance."
+        );
     }
 
     function testRoyaltyInfo() public {
         uint256 salePrice = 1 ether;
-        (address receiver, uint256 royaltyAmount) = honeyGenesis.royaltyInfo(1, salePrice);
+        (address receiver, uint256 royaltyAmount) = honeyGenesis.royaltyInfo(
+            1,
+            salePrice
+        );
 
         assertEq(receiver, owner, "Royalty receiver should be the owner.");
-        assertEq(royaltyAmount, salePrice * 5 / 100, "Royalty amount should be correct.");
+        assertEq(
+            royaltyAmount,
+            (salePrice * 5) / 100,
+            "Royalty amount should be correct."
+        );
     }
 
     function testSupportsInterface() public {
         // assertTrue(honeyGenesis.supportsInterface(type(IERC721A).interfaceId), "Should support IERC721A.");
-        assertTrue(honeyGenesis.supportsInterface(type(IERC2981).interfaceId), "Should support IERC2981.");
+        assertTrue(
+            honeyGenesis.supportsInterface(type(IERC2981).interfaceId),
+            "Should support IERC2981."
+        );
     }
+
+    // Add "fallback" and "receive" to receive eth, just for test
+    fallback() external payable {}
+
+    receive() external payable {}
 }

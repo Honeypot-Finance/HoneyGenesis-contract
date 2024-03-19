@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.24;
+pragma solidity ^0.8.13;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ERC721A} from "ERC721A/ERC721A.sol";
@@ -8,7 +8,6 @@ import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {IERC165} from "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 contract HoneyGenesis is ERC721A, IERC2981, Ownable {
-
     event NFTMinted(address indexed minter, uint256 amount, uint256 value);
     event FundWithdrawn(address owner, uint256 amount);
 
@@ -31,7 +30,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     error InsufficientEther(uint256 required, uint256 provided);
     error ExceedsMaxSupply(uint256 requested, uint256 available);
     error ExceedsVIPMaxSupply(uint256 requested, uint256 available);
-    
+
     constructor() ERC721A("HoneyGenesis", "HONEY") Ownable(msg.sender) {
         tokenCountNormal = 0;
         tokenCountVIP = 0;
@@ -40,7 +39,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     function mint(uint256 amount) public payable {
         address minter = msg.sender;
         uint256 totalCost = amount * _calcPrice(tokenCountNormal);
-        
+
         if (msg.value < totalCost) {
             revert InsufficientEther({
                 required: totalCost,
@@ -125,7 +124,6 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
         require(_VIPMintQuota[minter] >= amount, "Exceeds VIP mint quota");
 
-
         _VIPMintQuota[minter] -= amount;
 
         _safeMint(msg.sender, amount); // gas efficient, you can use batchMint function from ERC721A
@@ -166,7 +164,6 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     function _calcPrice(uint256 priceParam) private pure returns (uint256) {
         uint256 priceIncrements = priceParam / SUPPLY_INCREMENT_STEPSIZE + 1;
         return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
-
     }
 
     function getVIPPrice() public pure returns (uint256) {
@@ -195,20 +192,33 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     }
 
     // Function to increment the balance of an address
-    function incrementVIPMintQuota(address user, uint256 amount) public onlyOwner {
-        require(tokenCountVIP + amount <= VIP_SUPPLY_CAP, "Exceeds total VIP supply cap");
+    function incrementVIPMintQuota(
+        address user,
+        uint256 amount
+    ) public onlyOwner {
+        require(
+            tokenCountVIP + amount <= VIP_SUPPLY_CAP,
+            "Exceeds total VIP supply cap"
+        );
         _VIPMintQuota[user] += amount;
     }
 
     // Override for royalty info to always return the owner as the receiver
-    function royaltyInfo(uint256 /*tokenId*/, uint256 salePrice) external view override returns (address receiver, uint256 royaltyAmount) {
+    function royaltyInfo(
+        uint256 /*tokenId*/,
+        uint256 salePrice
+    ) external view override returns (address receiver, uint256 royaltyAmount) {
         receiver = owner(); // Royalties always go to the owner
-        royaltyAmount = salePrice * 5 / 100; // Assuming a flat 5% royalty
+        royaltyAmount = (salePrice * 5) / 100; // Assuming a flat 5% royalty
         return (receiver, royaltyAmount);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view override(ERC721A, IERC165) returns (bool) {
-        return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721A, IERC165) returns (bool) {
+        return
+            interfaceId == type(IERC2981).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /**
@@ -217,6 +227,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
      * by default, can be overridden in child contracts.
      */
     function _baseURI() internal pure override returns (string memory) {
-        return "https://bafkreifj2vyb3s77yrafreyoupk4ghjoyqsxiqoot2wjzev5tfstpjeqlm.ipfs.nftstorage.link";
+        return
+            "https://bafkreifj2vyb3s77yrafreyoupk4ghjoyqsxiqoot2wjzev5tfstpjeqlm.ipfs.nftstorage.link";
     }
 }

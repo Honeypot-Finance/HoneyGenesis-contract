@@ -277,12 +277,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         baseURI = newBaseURI;
         emit BatchMetadataUpdate(1, type(uint256).max); // Signal that all token metadata has been updated
     }
-
-    // Checks the balance pending withdrawal for the sender.
-    function checkPendingBalance() public view returns (uint256) {
-        return pendingBalances[msg.sender];
-    }
-
+    
     // Overrides the start token ID function from the ERC721A contract.
     function _startTokenId() internal view virtual override returns (uint256) {
         return 1;

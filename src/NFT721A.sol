@@ -252,14 +252,27 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
     // Function to increment the balance of an address
     function incrementVIPMintQuota(
-        address user,
-        uint256 amount
+        address[] calldata user,
+        uint256[] calldata amount
     ) public onlyOwner {
         require(
-            tokenCountVIP + amount <= VIP_SUPPLY_CAP,
+            user.length == amount.length,
+            "User and amount arrays must be of the same length"
+        );
+
+        uint256 totalAmount = 0;
+        for (uint256 i = 0; i < amount.length; i++) {
+            totalAmount += amount[i];
+        }
+
+        require(
+            tokenCountVIP + totalAmount <= VIP_SUPPLY_CAP,
             "Exceeds total VIP supply cap"
         );
-        _VIPMintQuota[user] += amount;
+
+        for (uint256 i = 0; i < user.length; i++) {
+            _VIPMintQuota[user[i]] += amount[i];
+        }
     }
 
     // Override for royalty info to always return the owner as the receiver
@@ -277,7 +290,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         baseURI = newBaseURI;
         emit BatchMetadataUpdate(1, type(uint256).max); // Signal that all token metadata has been updated
     }
-    
+
     // Overrides the start token ID function from the ERC721A contract.
     function _startTokenId() internal view virtual override returns (uint256) {
         return 1;

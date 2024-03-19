@@ -8,7 +8,7 @@ import {ERC721A} from "ERC721A/ERC721A.sol";
 import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 
 contract HoneyGenesisTest is Test {
-HoneyGenesis honeyGenesis;
+    HoneyGenesis honeyGenesis;
     address owner;
     address minter;
 
@@ -61,7 +61,7 @@ HoneyGenesis honeyGenesis;
 
         vm.prank(address(this));
         honeyGenesis.incrementVIPMintQuota(vipMinter, vipMintAmount);
-        
+
         uint256 vipMintQuotaBefore = honeyGenesis.getVIPMintQuota(vipMinter);
         assertEq(vipMintQuotaBefore, vipMintAmount);
 

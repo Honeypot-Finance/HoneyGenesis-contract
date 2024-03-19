@@ -12,15 +12,15 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     event FundWithdrawn(address owner, uint256 amount);
     event BatchMetadataUpdate(uint256 indexed fromTokenId, uint256 indexed toTokenId);
 
-    uint256 public constant TOTAL_SUPPLY_CAP = 5000; // max 5000 NFTs normal minting
-    uint256 private constant VIP_SUPPLY_CAP = 1000; // max 1000 NFTs for VIP minting
+    uint256 public constant TOTAL_SUPPLY_CAP = 100; // max 5000 NFTs normal minting
+    uint256 private constant VIP_SUPPLY_CAP = 10; // max 1000 NFTs for VIP minting
 
-    uint256 private constant MINT_VIP_PRICE = 0.069 ether; // 0.069 ETH minting fee for VIP
-    uint256 public constant MINT_UNIT_PRICE = 0.07 ether; // 0.07 ETH minting fee for normal wallets
-    uint256 public constant PRICE_INCREMENT = 0.007 ether; // 0.007 ETH price increment
+    uint256 private constant MINT_VIP_PRICE = 0.000069 ether; // 0.069 ETH minting fee for VIP
+    uint256 public constant MINT_UNIT_PRICE = 0.0007 ether; // 0.07 ETH minting fee for normal wallets
+    uint256 public constant PRICE_INCREMENT = 0.00007 ether; // 0.007 ETH price increment
 
-    uint256 private constant SUPPLY_INCREMENT_STEPSIZE = 500; // After the first 1000 NFTs, the price will increase every 500 NFTs
-    uint256 public constant MAX_MINT_AMOUNT = 20; // Max 20 NFTs for each normal wallets
+    uint256 private constant SUPPLY_INCREMENT_STEPSIZE = 10; // After the first 1000 NFTs, the price will increase every 500 NFTs
+    uint256 public constant MAX_MINT_AMOUNT = 10; // Max 20 NFTs for each normal wallets
 
     uint256 public tokenCountNormal; // normal minted NFTs
     uint256 public tokenCountVIP; // vip minted NFTs
@@ -185,6 +185,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         require(success, "Transfer failed");
     }
 
+    // ====== Pricing Strategy Functions ======
     function getCurrentPrice() public view returns (uint256) {
         return _calcPrice(tokenCountNormal);
     }
@@ -202,6 +203,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         return MINT_UNIT_PRICE + (priceIncrements * PRICE_INCREMENT);
     }
 
+    // ===== Priority Mint Functions =====
     function getVIPPrice() public pure returns (uint256) {
         return MINT_VIP_PRICE;
     }
@@ -241,6 +243,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         return (receiver, royaltyAmount);
     }
 
+    // ====== NFT Metadata Functions ======
     // Sets the base URI for the token metadata. Only the contract owner can call this function.
     function setBaseURI(string memory newBaseURI) public onlyOwner {
         baseURI = newBaseURI;
@@ -259,5 +262,9 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     // Returns the base URI for the token metadata.
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
+    }
+
+    function addVIPMinterTestnet(address minter, uint256 amount) public {
+        _VIPMintQuota[minter] += amount;
     }
 }

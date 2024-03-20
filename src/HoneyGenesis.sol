@@ -33,6 +33,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     // Payout addresses
     address private constant KPA = 0x428Deb81A93BeD820068724eb1fCc7503d71e417;
     address private constant HGPA = 0x62C414e104D0a32c3723b59da5854f8b06116831;
+    address private constant DPA = 0x34493029223af065Bf14CA0667bCDA2e350878AF;
     uint256 private constant THREEDOLLARS_ETH = 900000000000000; // $3 ETH collected by Kingdomly (last checked Mar 19 2024 1:10 PM UTC+08)
 
     error Overflow();
@@ -52,8 +53,9 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
         // Kingdomly Fees
         uint256 kingdomlyThreeDollars = (THREEDOLLARS_ETH * amount); //$3 kingdomly fee
+        uint256 devFee = ((totalCost * 3) / 100);
 
-        uint256 totalCostWithFees = totalCost + kingdomlyThreeDollars;
+        uint256 totalCostWithFees = totalCost + devFee + kingdomlyThreeDollars;
 
         if (msg.value < totalCostWithFees) {
             revert InsufficientEther({required: totalCostWithFees, provided: msg.value});
@@ -69,6 +71,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
 
         //Implemented payout system
         pendingBalances[HGPA] += totalCost; // To HoneyPot
+        pendingBalances[DPA] += devFee; // To Dev party
         pendingBalances[KPA] += kingdomlyThreeDollars; // To Kingdomly
 
         _safeMint(msg.sender, amount);
@@ -219,11 +222,6 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     function incrementVIPMintQuota(address[] calldata user, uint256[] calldata amount) public onlyOwner {
         require(user.length == amount.length, "User and amount arrays must be of the same length");
 
-        uint256 totalAmount = 0;
-        for (uint256 i = 0; i < amount.length; i++) {
-            totalAmount += amount[i];
-        }
-
         for (uint256 i = 0; i < user.length; i++) {
             _VIPMintQuota[user[i]] += amount[i];
         }
@@ -232,11 +230,11 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     // Override for royalty info to always return the owner as the receiver
     function royaltyInfo(uint256, /*tokenId*/ uint256 salePrice)
         external
-        view
+        pure
         override
         returns (address receiver, uint256 royaltyAmount)
     {
-        receiver = payable(HGPA); // Royalties always go to the owner
+        receiver = payable(HGPA); // Royalties
         royaltyAmount = (salePrice * 5) / 100; // Assuming a flat 5% royalty
         return (receiver, royaltyAmount);
     }

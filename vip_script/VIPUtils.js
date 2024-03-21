@@ -12,6 +12,7 @@ class VIPUtils {
     this.contract_address = process.env.NFT_ADDRESS;
     // console.log(process.env.ETH_RPC_URL);
     // console.log(process.env.PRIVATE_KEY);
+    // console.log(this.contract_address);
   }
 
   hi() {
@@ -29,6 +30,7 @@ class VIPUtils {
         abi,
         this.provider
       );
+
       let increseTx = await contractHandle
         .connect(this.wallet)
         .incrementVIPMintQuota(addVIPRequest.users, addVIPRequest.amounts);
@@ -42,6 +44,7 @@ class VIPUtils {
       return txHash;
     } catch (error) {
       console.error(`req=>${addVIPRequest},error=>${error}`);
+      throw error;
     }
   }
 }

@@ -155,26 +155,20 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
         }
     }
 
-    // UPDATED WITHDRAW FUNCTION
+    // UPDATED WITHDRAW FUNCTION FOR HONEYPOT
     function withdraw() public onlyOwner {
         // Checker
         require(pendingBalances[HGPA] > 0, "No funds to withdraw");
 
         uint256 honeyPotPayout = pendingBalances[HGPA];
-        uint256 kingdomlyPayout = pendingBalances[KPA];
-        uint256 devPayout = pendingBalances[DPA];
 
         // Set state to 0
         pendingBalances[HGPA] = 0;
-        pendingBalances[KPA] = 0; // We also included our address
-        pendingBalances[DPA] = 0;
 
         // Transaction
         (bool success1,) = payable(HGPA).call{value: honeyPotPayout}("");
-        (bool success2,) = payable(KPA).call{value: kingdomlyPayout}(""); // We also included our address
-        (bool success3,) = payable(DPA).call{value: devPayout}("");
 
-        require(success1 && success2 && success3, "Transfer failed");
+        require(success1, "Transfer failed");
     }
 
     // KINGDOMLY WITHDRAW FUNCTION

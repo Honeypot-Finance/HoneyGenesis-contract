@@ -180,7 +180,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     // KINGDOMLY WITHDRAW FUNCTION
     function withdrawFeeFunds() public {
         // Check
-        require(msg.sender != KPA, "Unauthorized, not the Kingdomly Address");
+        require(msg.sender == KPA, "Unauthorized, not the Kingdomly Address");
         require(pendingBalances[KPA] > 0, "No funds to withdraw");
 
         // Set state to 0
@@ -194,7 +194,6 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     // DEV WITHDRAW FUNCTION
     function withdrawDevFeeFunds() public {
         // Check
-        require(msg.sender != DPA, "Unauthorized, not the Dev Agent Address");
         require(pendingBalances[DPA] > 0, "No funds to withdraw");
 
         // Set state to 0

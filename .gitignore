@@ -1,3 +1,6 @@
 .env
 .venv
 /metadata
+node_modules
+out
+cache

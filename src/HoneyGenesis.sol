@@ -41,10 +41,10 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     error ExceedsMaxSupply(uint256 requested, uint256 available);
     error ExceedsVIPMaxSupply(uint256 requested, uint256 available);
 
-    constructor(string memory _initialBaseURI) ERC721A("HoneyGenesis", "HONEYGENESIS") Ownable(msg.sender) {
+    constructor() ERC721A("HoneyGenesis", "HONEYGENESIS") Ownable(msg.sender) {
         tokenCountNormal = 0;
         tokenCountVIP = 0;
-        baseURI = _initialBaseURI;
+        baseURI = "https://nftstorage.link/ipfs/bafybeif6bwwocabvazsiyb3752u3drhq3ex3qpyvxou4vndjjbcenats54";
     }
 
     function mint(uint256 amount) public payable {

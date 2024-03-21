@@ -7,9 +7,9 @@ const generateMetadata = (totalTokens) => {
     const metadata = {
       name: `HoneyGenesis #${i}`,
       description:
-        "HoneyGenesis is the Gen-0 series NFT from honeypot finance team which helps the owner gain unique honeypot finance perks.",
+        "HoneyGenesis is the Gen-0 series NFT created by Honeypot Finance team. This will help Honeypot Finance OGs gain unique perks.",
       image:
-        "https://bafkreifj2vyb3s77yrafreyoupk4ghjoyqsxiqoot2wjzev5tfstpjeqlm.ipfs.nftstorage.link",
+        "https://bafybeianvftytynjzo3twbmv36xrolkwmwfai5xcrxo6u5q3s5zsg5hwb4.ipfs.nftstorage.link/",
       attributes: [
         { trait_type: "bear", value: "pot the bera" },
         { trait_type: "generation", value: "zero" },

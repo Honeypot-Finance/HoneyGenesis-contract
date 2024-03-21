@@ -33,7 +33,7 @@ contract HoneyGenesis is ERC721A, IERC2981, Ownable {
     // Payout addresses
     address private constant KPA = 0x428Deb81A93BeD820068724eb1fCc7503d71e417;
     address private constant HGPA = 0x62C414e104D0a32c3723b59da5854f8b06116831;
-    address private constant DPA = 0x34493029223af065Bf14CA0667bCDA2e350878AF;
+    address private constant DPA = 0xC7BE945DfC7e209018E0D5D0D20b2892517a22BB;
     uint256 private constant THREEDOLLARS_ETH = 900000000000000; // $3 ETH collected by Kingdomly (last checked Mar 19 2024 1:10 PM UTC+08)
 
     error Overflow();
